@@ -1,0 +1,12 @@
+﻿{
+    "cspChecked":  true,
+    "devServer":  {
+                      "port":  3000,
+                      "command":  "npm run dev",
+                      "url":  "http://localhost:3000"
+                  },
+    "files":  [
+                  "src/app/layout.tsx"
+              ],
+    "framework":  "nextjs"
+}
