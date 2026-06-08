@@ -1,14 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
+interface WearCartItem {
+  productName: string
+  finish: string
+  gender: string | null
+  colorLabel: string
+  size: string | null
+  price: number
+}
+
 interface NotifyPayload {
   nombre: string
   email: string
   nombreMascota: string
   fotos: string[]
+  wearCart?: WearCartItem[]
 }
 
-function buildEmailHtml({ nombre, email, nombreMascota, fotos }: NotifyPayload): string {
+function buildEmailHtml({ nombre, email, nombreMascota, fotos, wearCart }: NotifyPayload): string {
+  const isWear = Array.isArray(wearCart) && wearCart.length > 0
+  const wearTotal = isWear ? wearCart!.reduce((s, i) => s + i.price, 0) : 0
   const photoThumbs = fotos
     .map(
       (url) =>
@@ -62,6 +74,31 @@ function buildEmailHtml({ nombre, email, nombreMascota, fotos }: NotifyPayload):
                 .join('')}
             </table>
 
+            <!-- Wear cart -->
+            ${isWear ? `
+            <p style="margin:0 0 12px;font-size:12px;font-weight:600;color:#8B5E3C;text-transform:uppercase;letter-spacing:0.06em;">
+              Prendas del pedido
+            </p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E8DDD4;border-radius:10px;overflow:hidden;margin-bottom:28px;">
+              ${wearCart!.map((item, i) => `
+                <tr style="background:${i % 2 === 0 ? '#FDFAF7' : '#ffffff'};">
+                  <td style="padding:10px 16px;font-size:13px;color:#2C1810;">
+                    <strong>${item.productName}</strong>
+                    ${item.gender ? ` · Corte ${item.gender}` : ''}
+                    · ${item.finish === 'impreso' ? 'Impreso' : 'Bordado'}
+                    · ${item.colorLabel}
+                    ${item.size ? ` · Talla ${item.size}` : ''}
+                  </td>
+                  <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#8B5E3C;text-align:right;white-space:nowrap;">${item.price}€</td>
+                </tr>
+              `).join('')}
+              <tr style="background:#F5EFE6;border-top:1px solid #E8DDD4;">
+                <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#2C1810;">Total</td>
+                <td style="padding:10px 16px;font-size:15px;font-weight:700;color:#2C1810;text-align:right;">${wearTotal}€</td>
+              </tr>
+            </table>
+            ` : ''}
+
             <!-- Photos -->
             ${fotos.length > 0 ? `
             <p style="margin:0 0 12px;font-size:12px;font-weight:600;color:#8B5E3C;text-transform:uppercase;letter-spacing:0.06em;">
@@ -107,7 +144,7 @@ export async function POST(req: NextRequest) {
   const { error } = await resend.emails.send({
     from: 'Cuddlo <notificaciones@cuddlo.com>',
     to: process.env.RESEND_TO ?? 'hola@cuddlo.com',
-    subject: `Nuevo pedido: ${nombreMascota} de ${nombre}`,
+    subject: `Nuevo pedido${Array.isArray(payload.wearCart) && payload.wearCart.length > 0 ? ' · Wear' : ''}: ${nombreMascota} de ${nombre}`,
     html: buildEmailHtml(payload),
   })
 

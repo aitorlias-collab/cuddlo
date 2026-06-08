@@ -63,19 +63,31 @@ const stagger = {
   show: { transition: { staggerChildren: 0.1, delayChildren: 0.6 } },
 }
 
+interface WearCartItem {
+  id: string
+  productName: string
+  finish: string
+  gender: string | null
+  colorLabel: string
+  size: string | null
+  price: number
+}
+
 export default function ConfirmContent() {
   const [lead, setLead] = useState<Lead | null>(null)
   const [photoCount, setPhotoCount] = useState(0)
+  const [wearCart, setWearCart] = useState<WearCartItem[]>([])
 
   useEffect(() => {
     try {
       const l = JSON.parse(localStorage.getItem('cuddlo_lead') ?? '{}')
       const photos: string[] = JSON.parse(localStorage.getItem('cuddlo_photos') ?? '[]')
+      const cart: WearCartItem[] = JSON.parse(localStorage.getItem('cuddlo_cart') ?? '[]')
 
       if (l.nombre) setLead(l)
       setPhotoCount(Array.isArray(photos) ? photos.length : 0)
+      if (Array.isArray(cart) && cart.length > 0) setWearCart(cart)
 
-      // Notify team — API handles dev/prod distinction internally
       if (l.nombre && l.email) {
         fetch('/api/notify', {
           method: 'POST',
@@ -85,6 +97,7 @@ export default function ConfirmContent() {
             email: l.email,
             nombreMascota: l.mascota ?? '',
             fotos: Array.isArray(photos) ? photos : [],
+            wearCart: Array.isArray(cart) ? cart : [],
           }),
         }).catch(() => {})
       }
@@ -93,24 +106,20 @@ export default function ConfirmContent() {
 
   const petName = lead?.mascota || 'tu mascota'
   const firstName = lead?.nombre?.split(' ')[0] ?? ''
+  const isWear = wearCart.length > 0
+  const wearTotal = wearCart.reduce((sum, item) => sum + item.price, 0)
 
-  const nextSteps = [
-    {
-      icon: '🎨',
-      title: `Creamos el render digital de ${petName}`,
-      sub: 'En menos de 48h',
-    },
-    {
-      icon: '✉️',
-      title: 'Te lo enviamos por email para que lo apruebes',
-      sub: 'Sin compromiso de pago',
-    },
-    {
-      icon: '📦',
-      title: 'Si te encanta, confirmamos y lo fabricamos',
-      sub: 'Llega en 3–4 semanas',
-    },
-  ]
+  const nextSteps = isWear
+    ? [
+        { icon: '🎨', title: `Creamos la ilustración de ${petName}`,         sub: 'En menos de 48h' },
+        { icon: '✉️', title: 'Te la enviamos por email para que la apruebes', sub: 'Sin compromiso de pago' },
+        { icon: '📦', title: 'Fabricamos y enviamos tus prendas',             sub: 'Llegan en 7–10 días' },
+      ]
+    : [
+        { icon: '🎨', title: `Creamos el render digital de ${petName}`,       sub: 'En menos de 48h' },
+        { icon: '✉️', title: 'Te lo enviamos por email para que lo apruebes', sub: 'Sin compromiso de pago' },
+        { icon: '📦', title: 'Si te encanta, confirmamos y lo fabricamos',    sub: 'Llega en 3–4 semanas' },
+      ]
 
   const summary = [
     { label: 'Nombre',         value: lead?.nombre || '—' },
@@ -144,8 +153,9 @@ export default function ConfirmContent() {
             variants={fade}
             className="text-sm text-ink/60 leading-relaxed max-w-[42ch] mx-auto"
           >
-            Hemos recibido las fotos de {petName}. Nuestro equipo las revisará
-            y recibirás el render en menos de 48 horas.
+            {isWear
+              ? `Hemos recibido las fotos de ${petName}. En menos de 48h tendrás la ilustración para aprobar antes de fabricar.`
+              : `Hemos recibido las fotos de ${petName}. Nuestro equipo las revisará y recibirás el render en menos de 48 horas.`}
           </motion.p>
         </motion.div>
 
@@ -211,6 +221,33 @@ export default function ConfirmContent() {
               </div>
             ))}
           </dl>
+
+          {/* Wear cart breakdown */}
+          {isWear && (
+            <div className="mt-5 pt-4 border-t border-sand/25">
+              <p className="text-xs font-semibold text-brown uppercase tracking-[0.12em] mb-3">
+                Prendas
+              </p>
+              <div className="flex flex-col gap-2">
+                {wearCart.map(item => (
+                  <div key={item.id} className="flex items-center justify-between text-sm">
+                    <span className="text-ink/70">
+                      {item.productName}
+                      {item.gender ? ` · Corte ${item.gender}` : ''}
+                      {' · '}{item.finish === 'impreso' ? 'Impreso' : 'Bordado'}
+                      {' · '}{item.colorLabel}
+                      {item.size ? ` · ${item.size}` : ''}
+                    </span>
+                    <span className="font-semibold text-brown ml-3 shrink-0">{item.price}€</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between items-center mt-3 pt-3 border-t border-sand/20">
+                <span className="text-xs text-ink/45">Total</span>
+                <span className="font-serif font-bold text-ink">{wearTotal}€</span>
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* CTA */}
