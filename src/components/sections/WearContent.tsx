@@ -690,13 +690,16 @@ export default function WearContent() {
                       >
                         + Añadir otra prenda
                       </button>
-                      <a
-                        href="/register"
+                      <button
+                        onClick={() => {
+                          localStorage.setItem('cuddlo_cart', JSON.stringify(cart))
+                          window.location.href = '/register'
+                        }}
                         className="flex-1 py-3 rounded-full bg-brown text-cream text-sm font-medium
                                    hover:bg-[#7A5235] transition-colors duration-200 text-center"
                       >
                         Continuar con el diseño →
-                      </a>
+                      </button>
                     </div>
                     <p className="text-xs text-ink/35 text-center mt-3">
                       Sin pago hasta aprobar la ilustración
