@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 
 const NAV_LINKS = [
   { label: 'Cómo funciona', href: '/#como-funciona' },
+  { label: 'Wear',          href: '/wear' },
   { label: 'Precios',       href: '/pricing' },
 ]
 
@@ -40,7 +41,7 @@ export default function Navbar() {
         {/* Nav links — desktop */}
         <div className="hidden md:flex items-center gap-8">
           {NAV_LINKS.map(({ label, href }) => {
-            const active = href === '/pricing' && pathname === '/pricing'
+            const active = pathname === href
             return (
               <a
                 key={href}
@@ -100,7 +101,7 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden border-t border-sand/20 bg-cream px-6 py-5 flex flex-col gap-4">
           {NAV_LINKS.map(({ label, href }) => {
-            const active = href === '/pricing' && pathname === '/pricing'
+            const active = pathname === href
             return (
               <a
                 key={href}
