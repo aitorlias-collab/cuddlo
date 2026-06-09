@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef } from 'react'
-import Image from 'next/image'
 import { motion, useInView } from 'framer-motion'
 
 const lines = [
@@ -13,7 +12,6 @@ const lines = [
     href: '/plush',
     imageSrc: '/images/hero.jpg',
     imageAlt: 'Dachshund y su réplica en peluche — Cuddlo Plush',
-    hasImage: true,
   },
   {
     id: 'wear',
@@ -21,9 +19,8 @@ const lines = [
     description: 'Tu mascota en tu ropa. Ilustración minimalista personalizada. Desde 39€.',
     buttonLabel: 'Ver colección',
     href: '/wear',
-    imageSrc: '/images/wear-hero.jpg',
+    imageSrc: '/images/wear-hero.png',
     imageAlt: 'Ropa personalizada con ilustración de tu mascota — Cuddlo Wear',
-    hasImage: false,
   },
 ]
 
@@ -53,30 +50,13 @@ function ProductCard({ line, index }: { line: (typeof lines)[0]; index: number }
 
       {/* Image area */}
       <div className="relative w-full flex-shrink-0 overflow-hidden" style={{ aspectRatio: '4/3' }}>
-        {line.hasImage ? (
-          <Image
-            src={line.imageSrc}
-            alt={line.imageAlt}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-            sizes="(max-width: 1024px) 100vw, 50vw"
-          />
-        ) : (
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{
-              background:
-                'linear-gradient(135deg, rgba(196,168,130,0.18) 0%, rgba(196,168,130,0.38) 100%)',
-            }}
-          >
-            <span
-              className="font-serif font-bold select-none"
-              style={{ fontSize: '7rem', color: 'rgba(196,168,130,0.38)', lineHeight: 1 }}
-            >
-              W
-            </span>
-          </div>
-        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={line.imageSrc}
+          alt={line.imageAlt}
+          className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+        />
       </div>
 
       {/* Content */}

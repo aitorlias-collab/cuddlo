@@ -46,7 +46,7 @@ interface CartItem {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const PRODUCTS = [
-  { id: 'camiseta' as const, name: 'Camiseta', badge: 'Impreso / Bordado', priceImpreso: 39, priceBordado: 49,   image: '/images/wear-camiseta.png' },
+  { id: 'camiseta' as const, name: 'Camiseta', badge: 'Impreso / Bordado', priceImpreso: 39, priceBordado: 49,   image: '/images/wear-sudadera.png' },
   { id: 'sudadera' as const, name: 'Sudadera', badge: 'Impreso / Bordado', priceImpreso: 55, priceBordado: 69,   image: '/images/wear-sudadera.png' },
   { id: 'tote'     as const, name: 'Tote Bag', badge: 'Solo impreso',       priceImpreso: 25, priceBordado: null, image: '/images/wear-totebag.png'  },
 ]
