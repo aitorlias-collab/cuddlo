@@ -40,9 +40,9 @@ const COLORS: { id: Color; label: string; hex: string; ring: string }[] = [
 const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 const WEAR_STEPS = [
-  { number: '01', icon: '📸', title: 'Elige tus prendas y sube fotos de tu mascota',      description: 'Configura cada prenda por separado y sube 3–8 fotos claras desde distintos ángulos.' },
-  { number: '02', icon: '✏️', title: 'Aprueba la ilustración antes de producir',          description: 'En menos de 48h recibes la ilustración. Si no te convence, la ajustamos sin coste.' },
-  { number: '03', icon: '📦', title: 'Recíbelas en casa en 7–10 días',                    description: 'Una vez aprobada, fabricamos todas las prendas de tu pedido. Etiqueta interior Cuddlo.' },
+  { number: '01', image: '/images/paso1.png', title: 'Elige tus prendas y sube fotos de tu mascota',      description: 'Configura cada prenda por separado y sube 3–8 fotos claras desde distintos ángulos.' },
+  { number: '02', image: '/images/paso2.png', title: 'Aprueba la ilustración antes de producir',          description: 'En menos de 48h recibes la ilustración. Si no te convence, la ajustamos sin coste.' },
+  { number: '03', image: '/images/paso3.png', title: 'Recíbelo en casa',                                   description: 'Una vez aprobada, fabricamos todas las prendas de tu pedido. Etiqueta interior Cuddlo.' },
 ]
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
@@ -204,14 +204,20 @@ function StepCard({ step, index }: { step: typeof WEAR_STEPS[0]; index: number }
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.6, delay: index * 0.15, ease: 'easeOut' }}
-      className="bg-cream rounded-2xl p-8 flex flex-col gap-5 shadow-[0_2px_16px_rgba(44,24,16,0.07)]"
+      className="bg-cream rounded-2xl overflow-hidden flex flex-col shadow-[0_2px_16px_rgba(44,24,16,0.07)]"
     >
-      <span className="font-serif text-[4rem] font-bold leading-none text-sand select-none">{step.number}</span>
-      <div>
-        <p className="text-brown text-lg mb-1">{step.icon}</p>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={step.image}
+        alt={step.title}
+        className="w-full object-cover"
+        style={{ aspectRatio: '4/3' }}
+      />
+      <div className="p-8 flex flex-col gap-4">
+        <span className="font-serif text-[4rem] font-bold leading-none text-sand select-none">{step.number}</span>
         <h3 className="font-serif text-lg font-semibold text-ink leading-snug">{step.title}</h3>
+        <p className="text-sm text-ink/65 leading-relaxed">{step.description}</p>
       </div>
-      <p className="text-sm text-ink/65 leading-relaxed">{step.description}</p>
     </motion.div>
   )
 }

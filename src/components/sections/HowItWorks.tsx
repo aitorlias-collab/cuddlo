@@ -1,27 +1,27 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useRef } from 'react'
 import Image from 'next/image'
 import { motion, useInView } from 'framer-motion'
 
 const steps = [
   {
     number: '01',
-    image: '/images/paso1.jpg',
+    image: '/images/paso1.png',
     title: 'Sube fotos de tu mascota',
     description:
       'Comparte entre 3 y 8 fotos claras desde distintos ángulos. Cuantas más fotos, más fiel es la réplica.',
   },
   {
     number: '02',
-    image: '/images/paso2.jpg',
+    image: '/images/paso2.png',
     title: 'Aprueba el render antes de pagar',
     description:
       'En menos de 48 horas recibes un render digital. Si algo no te convence, lo ajustamos. Sin coste.',
   },
   {
     number: '03',
-    image: '/images/paso3.jpg',
+    image: '/images/paso3.png',
     title: 'Confirma y recibe tu peluche',
     description:
       'Una vez aprobado el render, confirmamos el pedido. Tu Cuddlo llega en 3–4 semanas.',
@@ -29,19 +29,14 @@ const steps = [
 ]
 
 function StepImage({ src, alt }: { src: string; alt: string }) {
-  const [loaded, setLoaded] = useState(false)
-
   return (
-    <div
-      className="relative w-full bg-[#C4A882]/15 flex-shrink-0"
-      style={{ aspectRatio: '4/3' }}
-    >
+    <div className="w-full overflow-hidden flex-shrink-0" style={{ aspectRatio: '4/3' }}>
       <Image
         src={src}
         alt={alt}
-        fill
-        className={`object-cover transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-        onLoad={() => setLoaded(true)}
+        width={800}
+        height={600}
+        className="w-full h-full object-cover"
         sizes="(max-width: 1024px) 100vw, 33vw"
       />
     </div>
