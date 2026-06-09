@@ -1,31 +1,52 @@
 'use client'
 
-import { useRef } from 'react'
+import { useState, useRef } from 'react'
+import Image from 'next/image'
 import { motion, useInView } from 'framer-motion'
 
 const steps = [
   {
     number: '01',
-    icon: '📸',
+    image: '/images/paso1.jpg',
     title: 'Sube fotos de tu mascota',
     description:
       'Entre 3 y 8 fotos desde distintos ángulos. Cuantas más y mejores, más fiel es el resultado.',
   },
   {
     number: '02',
-    icon: '✏️',
+    image: '/images/paso2.jpg',
     title: 'Aprueba el diseño antes de pagar',
     description:
       'Render o ilustración en menos de 48 h. Si algo no te convence, lo ajustamos. Sin coste adicional.',
   },
   {
     number: '03',
-    icon: '📦',
+    image: '/images/paso3.jpg',
     title: 'Recíbelo en casa',
     description:
       'Te avisamos cuando esté listo para enviar. Sin sorpresas — solo el resultado que aprobaste.',
   },
 ]
+
+function StepImage({ src, alt }: { src: string; alt: string }) {
+  const [loaded, setLoaded] = useState(false)
+
+  return (
+    <div
+      className="relative w-full bg-[#C4A882]/15 flex-shrink-0"
+      style={{ aspectRatio: '4/3' }}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className={`object-cover transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        onLoad={() => setLoaded(true)}
+        sizes="(max-width: 1024px) 100vw, 33vw"
+      />
+    </div>
+  )
+}
 
 function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
   const ref = useRef(null)
@@ -37,24 +58,25 @@ function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
       initial={{ opacity: 0, y: 32 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.65, delay: index * 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="bg-cream rounded-2xl p-8 flex flex-col gap-5
+      className="bg-cream rounded-2xl overflow-hidden flex flex-col
                  shadow-[0_2px_18px_rgba(44,24,16,0.07)]"
     >
-      <span className="font-serif text-[4rem] font-bold leading-none text-sand select-none">
-        {step.number}
-      </span>
-      <div>
-        <p className="text-lg mb-1.5">{step.icon}</p>
+      <StepImage src={step.image} alt={step.title} />
+
+      <div className="p-8 flex flex-col gap-4">
+        <span className="font-serif text-[4rem] font-bold leading-none text-sand select-none">
+          {step.number}
+        </span>
         <h3
           className="font-serif font-semibold text-ink leading-snug"
           style={{ fontSize: '1.1rem', letterSpacing: '0.005em' } as React.CSSProperties}
         >
           {step.title}
         </h3>
+        <p className="text-sm text-ink/60 leading-relaxed">
+          {step.description}
+        </p>
       </div>
-      <p className="text-sm text-ink/60 leading-relaxed">
-        {step.description}
-      </p>
     </motion.div>
   )
 }

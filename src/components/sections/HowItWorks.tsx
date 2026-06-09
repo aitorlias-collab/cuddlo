@@ -1,31 +1,52 @@
 'use client'
 
-import { useRef } from 'react'
+import { useState, useRef } from 'react'
+import Image from 'next/image'
 import { motion, useInView } from 'framer-motion'
 
 const steps = [
   {
     number: '01',
-    icon: '📸',
+    image: '/images/paso1.jpg',
     title: 'Sube fotos de tu mascota',
     description:
       'Comparte entre 3 y 8 fotos claras desde distintos ángulos. Cuantas más fotos, más fiel es la réplica.',
   },
   {
     number: '02',
-    icon: '✦',
+    image: '/images/paso2.jpg',
     title: 'Aprueba el render antes de pagar',
     description:
       'En menos de 48 horas recibes un render digital. Si algo no te convence, lo ajustamos. Sin coste.',
   },
   {
     number: '03',
-    icon: '📦',
+    image: '/images/paso3.jpg',
     title: 'Confirma y recibe tu peluche',
     description:
       'Una vez aprobado el render, confirmamos el pedido. Tu Cuddlo llega en 3–4 semanas.',
   },
 ]
+
+function StepImage({ src, alt }: { src: string; alt: string }) {
+  const [loaded, setLoaded] = useState(false)
+
+  return (
+    <div
+      className="relative w-full bg-[#C4A882]/15 flex-shrink-0"
+      style={{ aspectRatio: '4/3' }}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className={`object-cover transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        onLoad={() => setLoaded(true)}
+        sizes="(max-width: 1024px) 100vw, 33vw"
+      />
+    </div>
+  )
+}
 
 function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
   const ref = useRef(null)
@@ -37,24 +58,22 @@ function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
       initial={{ opacity: 0, y: 28 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.15, ease: 'easeOut' }}
-      className="bg-cream rounded-2xl p-8 flex flex-col gap-5 shadow-[0_2px_16px_rgba(44,24,16,0.07)]"
+      className="bg-cream rounded-2xl overflow-hidden flex flex-col
+                 shadow-[0_2px_16px_rgba(44,24,16,0.07)]"
     >
-      {/* Number */}
-      <span className="font-serif text-[4rem] font-bold leading-none text-sand select-none">
-        {step.number}
-      </span>
+      <StepImage src={step.image} alt={step.title} />
 
-      {/* Icon + title */}
-      <div>
-        <p className="text-brown text-lg mb-1">{step.icon}</p>
+      <div className="p-8 flex flex-col gap-4">
+        <span className="font-serif text-[4rem] font-bold leading-none text-sand select-none">
+          {step.number}
+        </span>
         <h3 className="font-serif text-lg font-semibold text-ink leading-snug">
           {step.title}
         </h3>
+        <p className="text-sm text-ink/65 leading-relaxed">
+          {step.description}
+        </p>
       </div>
-
-      <p className="text-sm text-ink/65 leading-relaxed">
-        {step.description}
-      </p>
     </motion.div>
   )
 }
