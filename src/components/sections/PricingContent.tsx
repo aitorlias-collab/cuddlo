@@ -51,6 +51,35 @@ const addons = [
   { icon: '📦', imageSlug: 'addon-envio-prio',     name: 'Envío prioritario',      price: '+15€', desc: 'Entrega en 10–15 días (vs 3–4 semanas)' },
 ]
 
+const wearItems = [
+  {
+    id: 'camiseta',
+    name: 'Camiseta',
+    badge: 'Impreso / Bordado',
+    rows: [
+      { label: 'Impreso', price: 'desde 39€' },
+      { label: 'Bordado', price: 'desde 49€' },
+    ],
+  },
+  {
+    id: 'sudadera',
+    name: 'Sudadera',
+    badge: 'Impreso / Bordado',
+    rows: [
+      { label: 'Impreso', price: 'desde 55€' },
+      { label: 'Bordado', price: 'desde 69€' },
+    ],
+  },
+  {
+    id: 'tote',
+    name: 'Tote Bag',
+    badge: 'Solo impreso',
+    rows: [
+      { label: 'Precio único', price: '25€' },
+    ],
+  },
+]
+
 const faqs = [
   {
     q: '¿Cuándo pago?',
@@ -255,6 +284,87 @@ function PricingTiers() {
   )
 }
 
+function WearPricing() {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: '-60px' })
+
+  return (
+    <section className="bg-cream border-t border-sand/20 py-20 px-6">
+      <div ref={ref} className="max-w-5xl mx-auto">
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.55 }}
+          className="mb-12"
+        >
+          <h2
+            className="font-serif font-bold text-ink mb-2"
+            style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', textWrap: 'balance' } as React.CSSProperties}
+          >
+            Cuddlo Wear
+          </h2>
+          <p className="text-ink/55 text-base">
+            Tu mascota en tu ropa. Ilustración personalizada, acabado premium.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+          {wearItems.map((item, i) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 24 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.1 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="bg-white border border-sand/20 rounded-2xl
+                         shadow-[0_2px_16px_rgba(44,24,16,0.06)]
+                         p-7 flex flex-col gap-6"
+            >
+              {/* Name + badge */}
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="font-serif font-bold text-ink text-xl leading-tight">
+                  {item.name}
+                </h3>
+                <span className="shrink-0 text-xs font-medium text-brown
+                                 bg-brown/10 border border-brown/15
+                                 px-2.5 py-1 rounded-full leading-none">
+                  {item.badge}
+                </span>
+              </div>
+
+              {/* Price rows */}
+              <div className="flex flex-col gap-3 flex-1">
+                {item.rows.map((row) => (
+                  <div key={row.label} className="flex items-baseline justify-between gap-2">
+                    <span className="text-sm text-ink/50">{row.label}</span>
+                    <span className="font-serif font-bold text-ink text-lg">{row.price}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, delay: 0.45 }}
+          className="mt-10 flex justify-center"
+        >
+          <a
+            href="/wear"
+            className="bg-brown text-cream px-9 py-4 rounded-full text-sm font-medium
+                       hover:bg-[#7A5235] transition-colors duration-200"
+          >
+            Ver Cuddlo Wear
+          </a>
+        </motion.div>
+
+      </div>
+    </section>
+  )
+}
+
 function PricingAddons() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-60px' })
@@ -387,6 +497,7 @@ export default function PricingContent() {
     <>
       <PricingHero />
       <PricingTiers />
+      <WearPricing />
       <PricingAddons />
       <PricingFAQ />
       <PricingCTA />
