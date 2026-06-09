@@ -24,6 +24,10 @@ export const metadata: Metadata = {
   title: 'Cuddlo — El peluche personalizado de tu mascota',
   description:
     'Convierte a tu perro o gato en un peluche único y premium. Envía fotos, aprueba el render, y recibe tu réplica en 3–4 semanas.',
+  icons: {
+    icon: '/favicon.png',
+    apple: '/favicon.png',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
