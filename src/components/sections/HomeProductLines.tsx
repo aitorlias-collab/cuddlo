@@ -1,0 +1,145 @@
+'use client'
+
+import { useRef } from 'react'
+import Image from 'next/image'
+import { motion, useInView } from 'framer-motion'
+
+const lines = [
+  {
+    id: 'plush',
+    title: 'Cuddlo Plush',
+    description: 'Réplica artesanal de tu mascota en peluche premium. Desde 129€.',
+    buttonLabel: 'Ver colección',
+    href: '/plush',
+    imageSrc: '/images/hero.jpg',
+    imageAlt: 'Dachshund y su réplica en peluche — Cuddlo Plush',
+    hasImage: true,
+  },
+  {
+    id: 'wear',
+    title: 'Cuddlo Wear',
+    description: 'Tu mascota en tu ropa. Ilustración minimalista personalizada. Desde 39€.',
+    buttonLabel: 'Ver colección',
+    href: '/wear',
+    imageSrc: '/images/wear-hero.jpg',
+    imageAlt: 'Ropa personalizada con ilustración de tu mascota — Cuddlo Wear',
+    hasImage: false,
+  },
+]
+
+function ProductCard({ line, index }: { line: (typeof lines)[0]; index: number }) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: '-80px' })
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 44 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.75, delay: index * 0.15, ease: [0.22, 1, 0.36, 1] }}
+      className="group relative flex flex-col rounded-3xl overflow-hidden
+                 border border-sand/20 bg-cream
+                 shadow-[0_2px_24px_rgba(44,24,16,0.07)]
+                 hover:shadow-[0_12px_48px_rgba(44,24,16,0.14)]
+                 hover:scale-[1.02]
+                 transition-all duration-500 ease-out"
+    >
+      {/* Top accent line — visible on hover */}
+      <div
+        className="absolute top-0 left-0 right-0 h-0.5 z-10
+                   bg-sand/0 group-hover:bg-sand/70
+                   transition-colors duration-500"
+      />
+
+      {/* Image area */}
+      <div className="relative w-full flex-shrink-0 overflow-hidden" style={{ aspectRatio: '4/3' }}>
+        {line.hasImage ? (
+          <Image
+            src={line.imageSrc}
+            alt={line.imageAlt}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+          />
+        ) : (
+          <div
+            className="absolute inset-0 flex items-center justify-center"
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(196,168,130,0.18) 0%, rgba(196,168,130,0.38) 100%)',
+            }}
+          >
+            <span
+              className="font-serif font-bold select-none"
+              style={{ fontSize: '7rem', color: 'rgba(196,168,130,0.38)', lineHeight: 1 }}
+            >
+              W
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-col gap-5 p-8 flex-1">
+        <h3
+          className="font-serif font-bold text-ink"
+          style={{
+            fontSize: 'clamp(1.55rem, 2.5vw, 2rem)',
+            letterSpacing: '0.01em',
+          } as React.CSSProperties}
+        >
+          {line.title}
+        </h3>
+
+        <p className="text-ink/65 text-base leading-relaxed flex-1">
+          {line.description}
+        </p>
+
+        <a
+          href={line.href}
+          className="self-start border border-brown text-brown px-7 py-3 rounded-full text-sm font-medium
+                     hover:bg-brown hover:text-cream transition-all duration-300"
+        >
+          {line.buttonLabel}
+        </a>
+      </div>
+    </motion.div>
+  )
+}
+
+export default function HomeProductLines() {
+  const titleRef = useRef(null)
+  const titleInView = useInView(titleRef, { once: true, margin: '-60px' })
+
+  return (
+    <section id="product-lines" className="bg-cream py-28 lg:py-36">
+      <div className="max-w-6xl mx-auto px-6 lg:px-10">
+
+        <motion.div
+          ref={titleRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={titleInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.65 }}
+          className="mb-16 text-center"
+        >
+          <h2
+            className="font-serif font-bold text-ink"
+            style={{
+              fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
+              letterSpacing: '0.01em',
+            } as React.CSSProperties}
+          >
+            Dos líneas, un solo amor
+          </h2>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {lines.map((line, i) => (
+            <ProductCard key={line.id} line={line} index={i} />
+          ))}
+        </div>
+
+      </div>
+    </section>
+  )
+}
