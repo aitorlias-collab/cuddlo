@@ -1,7 +1,27 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+
+// ─── FadeImg helper ───────────────────────────────────────────────────────────
+
+function FadeImg({ src, alt, className, style }: { src: string; alt: string; className?: string; style?: React.CSSProperties }) {
+  const ref = useRef<HTMLImageElement>(null)
+  useEffect(() => {
+    if (ref.current?.complete) ref.current.style.opacity = '1'
+  }, [])
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      ref={ref}
+      src={src}
+      alt={alt}
+      className={className}
+      style={{ opacity: 0, transition: 'opacity 0.6s ease', ...style }}
+      onLoad={(e) => { e.currentTarget.style.opacity = '1' }}
+    />
+  )
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,9 +46,9 @@ interface CartItem {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const PRODUCTS = [
-  { id: 'camiseta' as const, name: 'Camiseta', badge: 'Impreso / Bordado', priceImpreso: 39, priceBordado: 49  },
-  { id: 'sudadera' as const, name: 'Sudadera', badge: 'Impreso / Bordado', priceImpreso: 55, priceBordado: 69  },
-  { id: 'tote'     as const, name: 'Tote Bag', badge: 'Solo impreso',       priceImpreso: 25, priceBordado: null },
+  { id: 'camiseta' as const, name: 'Camiseta', badge: 'Impreso / Bordado', priceImpreso: 39, priceBordado: 49,   image: '/images/wear-camiseta.png' },
+  { id: 'sudadera' as const, name: 'Sudadera', badge: 'Impreso / Bordado', priceImpreso: 55, priceBordado: 69,   image: '/images/wear-sudadera.png' },
+  { id: 'tote'     as const, name: 'Tote Bag', badge: 'Solo impreso',       priceImpreso: 25, priceBordado: null, image: '/images/wear-totebag.png'  },
 ]
 
 const COLORS: { id: Color; label: string; hex: string; ring: string }[] = [
@@ -383,19 +403,14 @@ export default function WearContent() {
             >
               <div
                 className="w-full max-w-sm lg:max-w-none rounded-2xl overflow-hidden
-                           shadow-[0_4px_28px_rgba(44,24,16,0.14)] flex items-center justify-center"
-                style={{ aspectRatio: '4/5', background: '#C4A882' }}
+                           shadow-[0_4px_28px_rgba(44,24,16,0.14)]"
+                style={{ aspectRatio: '4/5' }}
               >
-                <div className="text-center px-10">
-                  <div className="w-20 h-20 rounded-full bg-cream/25 mx-auto mb-4 flex items-center justify-center">
-                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
-                      <circle cx="18" cy="18" r="17" stroke="white" strokeOpacity="0.7" strokeWidth="1.5" />
-                      <path d="M11 25C11 20 14 16 18 16c4 0 7 4 7 9" stroke="white" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" />
-                      <circle cx="18" cy="13" r="3.5" stroke="white" strokeOpacity="0.7" strokeWidth="1.5" />
-                    </svg>
-                  </div>
-                  <p className="text-cream/70 text-sm font-medium">wear-hero.jpg</p>
-                </div>
+                <FadeImg
+                  src="/images/wear-hero.png"
+                  alt="Cuddlo Wear"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </motion.div>
           </div>
@@ -447,12 +462,12 @@ export default function WearContent() {
                         : 'border-sand/30 bg-cream hover:border-sand/70 hover:shadow-[0_1px_8px_rgba(44,24,16,0.06)]'
                       }`}
                   >
-                    <div
-                      className="w-full rounded-xl mb-3 flex items-center justify-center"
-                      style={{ height: 80, background: product === p.id ? '#EDE3D8' : '#F0EAE0' }}
-                    >
-                      <ProductIcon id={p.id} />
-                    </div>
+                    <FadeImg
+                      src={p.image}
+                      alt={p.name}
+                      className="w-full rounded-xl mb-3 object-cover"
+                      style={{ aspectRatio: '4/3' }}
+                    />
                     <p className="font-serif font-semibold text-ink text-sm leading-tight">{p.name}</p>
                     <p className="text-brown text-xs mt-0.5">Desde {p.priceImpreso}€</p>
                     <span className={`inline-block text-[10px] px-1.5 py-0.5 rounded-full font-medium mt-1.5
@@ -826,21 +841,24 @@ export default function WearContent() {
               transition={{ duration: 0.65, delay: 0.1, ease: 'easeOut' }}
               className="grid grid-cols-2 gap-4"
             >
-              {[{ label: 'Foto real', bg: '#D4C4B0' }, { label: 'En la prenda', bg: '#C4A882' }].map(item => (
-                <div
-                  key={item.label}
-                  className="rounded-2xl flex items-center justify-center flex-col gap-2
-                             shadow-[0_2px_16px_rgba(44,24,16,0.1)]"
-                  style={{ background: item.bg, aspectRatio: '3/4' }}
-                >
-                  <svg width="32" height="32" viewBox="0 0 36 36" fill="none" aria-hidden="true">
-                    <circle cx="18" cy="18" r="17" stroke="white" strokeOpacity="0.6" strokeWidth="1.5" />
-                    <path d="M11 25c0-5 3-9 7-9s7 4 7 9" stroke="white" strokeOpacity="0.6" strokeWidth="1.5" strokeLinecap="round" />
-                    <circle cx="18" cy="13" r="3.5" stroke="white" strokeOpacity="0.6" strokeWidth="1.5" />
-                  </svg>
-                  <p className="text-cream/70 text-xs font-medium">{item.label}</p>
-                </div>
-              ))}
+              <div className="flex flex-col gap-2">
+                <FadeImg
+                  src="/images/wear-antes.png"
+                  alt="Tu mascota"
+                  className="w-full rounded-2xl object-cover shadow-[0_2px_16px_rgba(44,24,16,0.1)]"
+                  style={{ aspectRatio: '3/4' }}
+                />
+                <p className="text-center text-xs font-medium text-ink/50">Tu mascota</p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <FadeImg
+                  src="/images/wear-despues.png"
+                  alt="Tu Cuddlo Wear"
+                  className="w-full rounded-2xl object-cover shadow-[0_2px_16px_rgba(44,24,16,0.1)]"
+                  style={{ aspectRatio: '3/4' }}
+                />
+                <p className="text-center text-xs font-medium text-ink/50">Tu Cuddlo Wear</p>
+              </div>
             </motion.div>
 
           </div>
