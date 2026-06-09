@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Bodoni_Moda, Inter } from 'next/font/google'
 import '@/styles/globals.css'
 import CustomCursor from '@/components/ui/CustomCursor'
+import CookieBanner from '@/components/CookieBanner'
 
 const bodoniModa = Bodoni_Moda({
   subsets: ['latin'],
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es" className={`${bodoniModa.variable} ${inter.variable}`}>
       <body className="font-sans antialiased bg-cream text-ink">
         <CustomCursor />
+        <CookieBanner />
         {children}
       </body>
     </html>
