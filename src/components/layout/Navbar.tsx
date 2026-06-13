@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
+import CartIcon from '@/components/CartIcon'
 
 const NAV_LINKS = [
   { label: 'Peluche', href: '/plush' },
@@ -62,6 +63,9 @@ export default function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          {/* Cart icon */}
+          <CartIcon />
+
           {/* CTA — desktop */}
           <a
             href="/register"

@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useCart } from '@/context/CartContext'
+import { getWearVariantId } from '@/lib/shopify'
 
 // ─── FadeImg helper ───────────────────────────────────────────────────────────
 
@@ -255,6 +257,8 @@ export default function WearContent() {
   // Cart
   const [cart, setCart] = useState<CartItem[]>([])
   const [justAdded, setJustAdded] = useState(false)
+  const [addingToShopify, setAddingToShopify] = useState(false)
+  const shopifyCart = useCart()
 
   // Section refs for guided scroll
   const productRef = useRef<HTMLDivElement>(null)
@@ -311,7 +315,7 @@ export default function WearContent() {
 
   // ── Add to cart ──
 
-  function handleAddToCart() {
+  async function handleAddToCart() {
     if (!isComplete || !product || !color) return
 
     const productData  = PRODUCTS.find(p => p.id === product)!
@@ -333,6 +337,22 @@ export default function WearContent() {
     setCart(prev => [...prev, item])
     setJustAdded(true)
     setTimeout(() => setJustAdded(false), 2200)
+
+    // Sync with Shopify cart
+    setAddingToShopify(true)
+    getWearVariantId(product, effectFinish, isTote ? null : gender, color, isTote ? null : size)
+      .then(variantId => {
+        if (!variantId) return
+        const attrs = [
+          { key: 'Acabado', value: effectFinish === 'impreso' ? 'Impreso' : 'Bordado' },
+          ...(gender ? [{ key: 'Corte', value: gender === 'mujer' ? 'Mujer' : 'Hombre' }] : []),
+          { key: 'Color', value: colorData.label },
+          ...(size ? [{ key: 'Talla', value: size }] : []),
+        ]
+        return shopifyCart.addItem(variantId, 1, attrs)
+      })
+      .catch(() => {})
+      .finally(() => setAddingToShopify(false))
 
     // Reset configurator for next item
     setProduct(null); setFinish(null); setGender(null); setColor(null); setSize(null)
@@ -638,10 +658,12 @@ export default function WearContent() {
                   </div>
                   <button
                     onClick={handleAddToCart}
+                    disabled={addingToShopify}
                     className="bg-brown text-cream px-7 py-3.5 rounded-full text-sm font-medium
-                               hover:bg-[#7A5235] transition-colors duration-200 whitespace-nowrap"
+                               hover:bg-[#7A5235] transition-colors duration-200 whitespace-nowrap
+                               disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    + Añadir al pedido
+                    {addingToShopify ? 'Añadiendo…' : 'Añadir al carrito'}
                   </button>
                 </div>
               </div>
