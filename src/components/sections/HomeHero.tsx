@@ -21,6 +21,17 @@ export default function HomeHero() {
       className="relative pt-40 pb-32 lg:pt-48 lg:pb-40"
       style={{ background: 'linear-gradient(to bottom, #F5EFE6 0%, #FDFAF6 100%)' }}
     >
+      {/* Subtle paw pattern overlay */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: 'url(/images/pattern-cuddlo-paws.png)',
+          backgroundSize: '300px',
+          backgroundRepeat: 'repeat',
+          opacity: 0.035,
+        }}
+      />
       <div className="max-w-4xl mx-auto px-6 lg:px-10 text-center">
         <motion.div
           variants={heroText}
