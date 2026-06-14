@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
-import { getWearVariantId } from '@/lib/shopify'
+import { getWearVariantId, getProductByHandle } from '@/lib/shopify'
 
 // ─── FadeImg helper ───────────────────────────────────────────────────────────
 
@@ -43,6 +43,7 @@ interface CartItem {
   colorLabel: string
   size: Size | null
   price: number
+  addOnNombre?: string
 }
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -60,6 +61,7 @@ const COLORS: { id: Color; label: string; hex: string; ring: string }[] = [
 ]
 
 const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+const ADDON_NOMBRE_PRICE = 6.99
 
 const WEAR_STEPS = [
   { number: '01', image: '/images/paso1.png', title: 'Elige tus prendas y sube fotos de tu mascota',      description: 'Configura cada prenda por separado y sube 3–8 fotos claras desde distintos ángulos.' },
@@ -196,24 +198,37 @@ function CartRow({ item, onRemove }: { item: CartItem; onRemove: () => void }) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 12, height: 0, marginBottom: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="flex items-center gap-4 py-4 border-b border-sand/20 last:border-0"
+      className="border-b border-sand/20 last:border-0"
     >
-      <div className="w-10 h-10 rounded-xl bg-[#EDE3D8] flex items-center justify-center shrink-0">
-        <ProductIcon id={item.product} />
+      <div className="flex items-center gap-4 py-4">
+        <div className="w-10 h-10 rounded-xl bg-[#EDE3D8] flex items-center justify-center shrink-0">
+          <ProductIcon id={item.product} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm text-ink">{item.productName}</p>
+          <p className="text-xs text-ink/50 mt-0.5 truncate">{itemDescription(item)}</p>
+        </div>
+        <p className="font-serif font-semibold text-brown text-base shrink-0">{item.price}€</p>
+        <button
+          onClick={onRemove}
+          aria-label={`Eliminar ${item.productName}`}
+          className="w-6 h-6 rounded-full bg-sand/20 text-ink/40 hover:bg-red-100 hover:text-red-500
+                     flex items-center justify-center text-sm transition-colors duration-150 shrink-0"
+        >
+          ×
+        </button>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm text-ink">{item.productName}</p>
-        <p className="text-xs text-ink/50 mt-0.5 truncate">{itemDescription(item)}</p>
-      </div>
-      <p className="font-serif font-semibold text-brown text-base shrink-0">{item.price}€</p>
-      <button
-        onClick={onRemove}
-        aria-label={`Eliminar ${item.productName}`}
-        className="w-6 h-6 rounded-full bg-sand/20 text-ink/40 hover:bg-red-100 hover:text-red-500
-                   flex items-center justify-center text-sm transition-colors duration-150 shrink-0"
-      >
-        ×
-      </button>
+      {item.addOnNombre && (
+        <div className="flex items-center gap-4 pb-3 pl-14">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-brown/80">
+              ✦ Nombre: <span className="font-medium">{item.addOnNombre}</span>
+            </p>
+          </div>
+          <p className="text-xs font-medium text-brown shrink-0">+{ADDON_NOMBRE_PRICE.toFixed(2).replace('.', ',')}€</p>
+          <div className="w-6 shrink-0" />
+        </div>
+      )}
     </motion.div>
   )
 }
@@ -260,6 +275,12 @@ export default function WearContent() {
   const [addingToShopify, setAddingToShopify] = useState(false)
   const shopifyCart = useCart()
 
+  // Nombre en prenda add-on
+  const [nombreMascota, setNombreMascota] = useState('')
+  const [customNombre, setCustomNombre] = useState('')
+  const [addNombre, setAddNombre] = useState(false)
+  const [nombreVariantId, setNombreVariantId] = useState<string | null>(null)
+
   // Section refs for guided scroll
   const productRef = useRef<HTMLDivElement>(null)
   const finishRef  = useRef<HTMLDivElement>(null)
@@ -268,6 +289,16 @@ export default function WearContent() {
   const sizeRef    = useRef<HTMLDivElement>(null)
   const addBtnRef  = useRef<HTMLDivElement>(null)
   const cartRef    = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    try {
+      const lead = JSON.parse(localStorage.getItem('cuddlo_lead') ?? '{}')
+      if (lead.nombreMascota) setNombreMascota(lead.nombreMascota)
+    } catch {}
+    getProductByHandle('nombre-en-prenda')
+      .then(p => setNombreVariantId(p?.variants.edges[0]?.node.id ?? null))
+      .catch(() => {})
+  }, [])
 
   const isTote = product === 'tote'
 
@@ -321,6 +352,7 @@ export default function WearContent() {
     const productData  = PRODUCTS.find(p => p.id === product)!
     const colorData    = COLORS.find(c => c.id === color)!
     const effectFinish: Finish = isTote ? 'impreso' : (finish ?? 'impreso')
+    const petName = nombreMascota || customNombre
 
     const item: CartItem = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -332,6 +364,7 @@ export default function WearContent() {
       colorLabel: colorData.label,
       size: isTote ? null : size,
       price: getPrice(product, effectFinish),
+      ...(addNombre && petName ? { addOnNombre: petName } : {}),
     }
 
     setCart(prev => [...prev, item])
@@ -341,7 +374,7 @@ export default function WearContent() {
     // Sync with Shopify cart
     setAddingToShopify(true)
     getWearVariantId(product, effectFinish, isTote ? null : gender, color, isTote ? null : size)
-      .then(variantId => {
+      .then(async variantId => {
         if (!variantId) return
         const attrs = [
           { key: 'Acabado', value: effectFinish === 'impreso' ? 'Impreso' : 'Bordado' },
@@ -349,13 +382,18 @@ export default function WearContent() {
           { key: 'Color', value: colorData.label },
           ...(size ? [{ key: 'Talla', value: size }] : []),
         ]
-        return shopifyCart.addItem(variantId, 1, attrs)
+        await shopifyCart.addItem(variantId, 1, attrs)
+        if (addNombre && nombreVariantId && petName) {
+          await shopifyCart.addItem(nombreVariantId, 1, [{ key: 'Nombre', value: petName }])
+        }
       })
       .catch(() => {})
       .finally(() => setAddingToShopify(false))
 
     // Reset configurator for next item
     setProduct(null); setFinish(null); setGender(null); setColor(null); setSize(null)
+    setAddNombre(false)
+    if (!nombreMascota) setCustomNombre('')
 
     // Scroll to cart (with delay so it has time to render)
     setTimeout(() => scrollToRef(cartRef, 50), 320)
@@ -365,7 +403,7 @@ export default function WearContent() {
     setCart(prev => prev.filter(item => item.id !== id))
   }
 
-  const total = cart.reduce((sum, item) => sum + item.price, 0)
+  const total = cart.reduce((sum, item) => sum + item.price + (item.addOnNombre ? ADDON_NOMBRE_PRICE : 0), 0)
 
   return (
     <>
@@ -638,6 +676,61 @@ export default function WearContent() {
 
             {/* ── AÑADIR AL PEDIDO ──────────────────────────────────────── */}
             <RevealSection visible={isComplete} sectionRef={addBtnRef}>
+
+              {/* Nombre en prenda — optional add-on */}
+              <div
+                className="rounded-2xl border p-5 sm:p-6 mb-4"
+                style={{ background: '#EEEDFE', borderColor: '#C4A882' }}
+              >
+                <div className="flex items-start gap-4">
+                  {/* Toggle */}
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={addNombre}
+                    onClick={() => setAddNombre(v => !v)}
+                    className="relative mt-0.5 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B5E3C]/40 rounded-full"
+                  >
+                    <div className={`w-10 h-6 rounded-full transition-colors duration-200 ${addNombre ? 'bg-[#8B5E3C]' : 'bg-[#C4A882]/60'}`} />
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${addNombre ? 'left-5' : 'left-1'}`} />
+                  </button>
+
+                  {/* Text */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3 mb-1">
+                      <p
+                        className="font-medium text-sm text-ink leading-snug cursor-pointer"
+                        onClick={() => setAddNombre(v => !v)}
+                      >
+                        {nombreMascota ? (
+                          <>Añadir el nombre de <span className="font-semibold">{nombreMascota}</span> bajo la ilustración</>
+                        ) : (
+                          'Añadir el nombre de tu mascota bajo la ilustración'
+                        )}
+                      </p>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-[#8B5E3C]/10 text-[#8B5E3C] font-semibold shrink-0 whitespace-nowrap">
+                        +6,99€
+                      </span>
+                    </div>
+                    <p className="text-xs text-ink/50 leading-relaxed">
+                      El nombre aparecerá en la misma tipografía que la ilustración
+                    </p>
+                    {!nombreMascota && addNombre && (
+                      <input
+                        type="text"
+                        value={customNombre}
+                        onChange={e => setCustomNombre(e.target.value)}
+                        placeholder="Nombre de tu mascota"
+                        maxLength={20}
+                        className="mt-3 w-full rounded-xl border border-[#C4A882] bg-white/70 px-3 py-2
+                                   text-sm text-ink placeholder:text-ink/35 focus:outline-none
+                                   focus:ring-2 focus:ring-[#8B5E3C]/30"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="bg-cream rounded-2xl border border-sand/30 p-5 sm:p-6
                               shadow-[0_2px_16px_rgba(44,24,16,0.07)]">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
