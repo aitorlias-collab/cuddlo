@@ -49,9 +49,9 @@ interface CartItem {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const PRODUCTS = [
-  { id: 'camiseta' as const, name: 'Camiseta', badge: 'Impreso / Bordado', priceImpreso: 39, priceBordado: 49,   image: '/images/wear-sudadera.png' },
-  { id: 'sudadera' as const, name: 'Sudadera', badge: 'Impreso / Bordado', priceImpreso: 55, priceBordado: 69,   image: '/images/wear-sudadera.png' },
-  { id: 'tote'     as const, name: 'Tote Bag', badge: 'Solo impreso',       priceImpreso: 25, priceBordado: null, image: '/images/wear-totebag.png'  },
+  { id: 'camiseta' as const, name: 'Camiseta', badge: 'Impreso / Bordado', priceImpreso: 39, priceBordado: 49,   image: '/images/wear-camiseta-mujer-crema.png' },
+  { id: 'sudadera' as const, name: 'Sudadera', badge: 'Impreso / Bordado', priceImpreso: 55, priceBordado: 69,   image: '/images/wear-sudadera-mujer-crema.png' },
+  { id: 'tote'     as const, name: 'Tote Bag', badge: 'Solo impreso',       priceImpreso: 25, priceBordado: null, image: '/images/wear-totebag-producto.png'      },
 ]
 
 const COLORS: { id: Color; label: string; hex: string; ring: string }[] = [
@@ -62,6 +62,10 @@ const COLORS: { id: Color; label: string; hex: string; ring: string }[] = [
 
 const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 const ADDON_NOMBRE_PRICE = 6.99
+
+// Maps Color values → filename suffix (feminine form matches actual filenames)
+const COLOR_FILE: Record<Color, string> = { crema: 'crema', blanco: 'blanca', negro: 'negra' }
+const DEFAULT_PREVIEW = '/images/wear-camiseta-mujer-crema.png'
 const NOMBRE_ADDON_VARIANT: Record<'impreso' | 'bordado', string> = {
   impreso: 'gid://shopify/ProductVariant/53289247244616',
   bordado: 'gid://shopify/ProductVariant/53289247277384',
@@ -237,6 +241,24 @@ function CartRow({ item, onRemove }: { item: CartItem; onRemove: () => void }) {
   )
 }
 
+// Dynamic product preview with crossfade on src change
+function WearPreviewImage({ src }: { src: string }) {
+  return (
+    <AnimatePresence mode="sync">
+      <motion.img
+        key={src}
+        src={src}
+        alt="Vista previa de prenda"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+    </AnimatePresence>
+  )
+}
+
 // How it works step card
 function StepCard({ step, index }: { step: typeof WEAR_STEPS[0]; index: number }) {
   return (
@@ -301,6 +323,15 @@ export default function WearContent() {
   }, [])
 
   const isTote = product === 'tote'
+
+  // Derive the preview image from current selection (falls back to defaults)
+  const previewSrc = (() => {
+    if (!product) return DEFAULT_PREVIEW
+    if (product === 'tote') return '/images/wear-totebag-producto.png'
+    const g = gender ?? 'mujer'
+    const c = COLOR_FILE[color ?? 'crema']
+    return `/images/wear-${product}-${g}-${c}.png`
+  })()
 
   // Step visibility — each section only appears when previous is complete
   const showFinish  = product !== null && !isTote
@@ -460,15 +491,11 @@ export default function WearContent() {
               className="flex justify-center lg:justify-end"
             >
               <div
-                className="w-full max-w-sm lg:max-w-none rounded-2xl overflow-hidden
+                className="relative w-full max-w-sm lg:max-w-none rounded-2xl overflow-hidden
                            shadow-[0_4px_28px_rgba(44,24,16,0.14)]"
                 style={{ aspectRatio: '4/5' }}
               >
-                <FadeImg
-                  src="/images/wear-hero.png"
-                  alt="Cuddlo Wear"
-                  className="w-full h-full object-cover"
-                />
+                <WearPreviewImage src={previewSrc} />
               </div>
             </motion.div>
           </div>
