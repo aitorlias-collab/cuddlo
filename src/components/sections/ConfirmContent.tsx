@@ -269,10 +269,10 @@ export default function ConfirmContent() {
           <p className="text-xs text-ink/40">
             ¿Dudas?{' '}
             <a
-              href="mailto:hola@cuddlo.com"
+              href="mailto:hello@cuddlo.pet"
               className="text-brown underline underline-offset-2 hover:text-ink transition-colors"
             >
-              hola@cuddlo.com
+              hello@cuddlo.pet
             </a>
           </p>
         </motion.div>

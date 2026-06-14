@@ -113,7 +113,7 @@ function buildEmailHtml({ nombre, email, nombreMascota, fotos, wearCart }: Notif
         <tr>
           <td style="background:#F5EFE6;padding:20px 36px;border-top:1px solid #E8DDD4;">
             <p style="margin:0;font-size:12px;color:#8B5E3C;">
-              Cuddlo · hola@cuddlo.com
+              Cuddlo · hello@cuddlo.pet
             </p>
           </td>
         </tr>
@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
 
   const { error } = await resend.emails.send({
     from: 'Cuddlo <notificaciones@cuddlo.com>',
-    to: process.env.RESEND_TO ?? 'hola@cuddlo.com',
+    to: process.env.RESEND_TO ?? 'hello@cuddlo.pet',
     subject: `Nuevo pedido${Array.isArray(payload.wearCart) && payload.wearCart.length > 0 ? ' · Wear' : ''}: ${nombreMascota} de ${nombre}`,
     html: buildEmailHtml(payload),
   })
