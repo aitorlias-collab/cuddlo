@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
 
   const { error } = await resend.emails.send({
-    from: 'Cuddlo <notificaciones@cuddlo.com>',
+    from: `Cuddlo <${process.env.RESEND_FROM ?? 'hello@cuddlo.pet'}>`,
     to: process.env.RESEND_TO ?? 'hello@cuddlo.pet',
     subject: `Nuevo pedido${Array.isArray(payload.wearCart) && payload.wearCart.length > 0 ? ' · Wear' : ''}: ${nombreMascota} de ${nombre}`,
     html: buildEmailHtml(payload),
