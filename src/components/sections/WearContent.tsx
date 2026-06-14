@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
-import { getWearVariantId, getProductByHandle } from '@/lib/shopify'
+import { getWearVariantId } from '@/lib/shopify'
 
 // ─── FadeImg helper ───────────────────────────────────────────────────────────
 
@@ -62,6 +62,10 @@ const COLORS: { id: Color; label: string; hex: string; ring: string }[] = [
 
 const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 const ADDON_NOMBRE_PRICE = 6.99
+const NOMBRE_ADDON_VARIANT: Record<'impreso' | 'bordado', string> = {
+  impreso: 'gid://shopify/ProductVariant/53289247244616',
+  bordado: 'gid://shopify/ProductVariant/53289247277384',
+}
 
 const WEAR_STEPS = [
   { number: '01', image: '/images/paso1.png', title: 'Elige tus prendas y sube fotos de tu mascota',      description: 'Configura cada prenda por separado y sube 3–8 fotos claras desde distintos ángulos.' },
@@ -279,7 +283,6 @@ export default function WearContent() {
   const [nombreMascota, setNombreMascota] = useState('')
   const [customNombre, setCustomNombre] = useState('')
   const [addNombre, setAddNombre] = useState(false)
-  const [nombreVariantId, setNombreVariantId] = useState<string | null>(null)
 
   // Section refs for guided scroll
   const productRef = useRef<HTMLDivElement>(null)
@@ -295,9 +298,6 @@ export default function WearContent() {
       const lead = JSON.parse(localStorage.getItem('cuddlo_lead') ?? '{}')
       if (lead.nombreMascota) setNombreMascota(lead.nombreMascota)
     } catch {}
-    getProductByHandle('nombre-en-prenda')
-      .then(p => setNombreVariantId(p?.variants.edges[0]?.node.id ?? null))
-      .catch(() => {})
   }, [])
 
   const isTote = product === 'tote'
@@ -383,8 +383,8 @@ export default function WearContent() {
           ...(size ? [{ key: 'Talla', value: size }] : []),
         ]
         await shopifyCart.addItem(variantId, 1, attrs)
-        if (addNombre && nombreVariantId && petName) {
-          await shopifyCart.addItem(nombreVariantId, 1, [{ key: 'Nombre', value: petName }])
+        if (addNombre && petName) {
+          await shopifyCart.addItem(NOMBRE_ADDON_VARIANT[effectFinish], 1, [{ key: 'Nombre', value: petName }])
         }
       })
       .catch(() => {})
