@@ -243,18 +243,37 @@ function CartRow({ item, onRemove }: { item: CartItem; onRemove: () => void }) {
 
 // Dynamic product preview with crossfade on src change
 function WearPreviewImage({ src }: { src: string }) {
+  const [failed, setFailed] = useState(false)
+  useEffect(() => { setFailed(false) }, [src])
+
   return (
     <AnimatePresence mode="sync">
-      <motion.img
-        key={src}
-        src={src}
-        alt="Vista previa de prenda"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      {!failed ? (
+        <motion.img
+          key={src}
+          src={src}
+          alt="Vista previa de prenda"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          className="absolute inset-0 w-full h-full object-cover"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <motion.div
+          key="placeholder"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute inset-0 flex items-center justify-center bg-[#F5EFE6]"
+        >
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+            <path d="M8 36V18a2 2 0 012-2h4l3-4h14l3 4h4a2 2 0 012 2v18a2 2 0 01-2 2H10a2 2 0 01-2-2z"
+                  stroke="#C4A882" strokeWidth="1.5" strokeLinejoin="round" />
+            <circle cx="24" cy="27" r="6" stroke="#C4A882" strokeWidth="1.5" />
+          </svg>
+        </motion.div>
+      )}
     </AnimatePresence>
   )
 }
@@ -444,13 +463,13 @@ export default function WearContent() {
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section className="bg-cream pt-32 lg:pt-36 pb-20">
         <div className="max-w-6xl mx-auto px-6 lg:px-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center">
 
             <motion.div
               initial="hidden"
               animate="show"
               variants={{ hidden: {}, show: { transition: { staggerChildren: 0.14, delayChildren: 0.1 } } }}
-              className="flex flex-col gap-7"
+              className="flex flex-col gap-7 order-2 lg:order-1"
             >
               <motion.h1
                 variants={{ hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } } }}
@@ -491,10 +510,10 @@ export default function WearContent() {
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.2, ease: 'easeOut' }}
-              className="flex justify-center lg:justify-end"
+              className="flex justify-center lg:justify-end order-1 lg:order-2"
             >
               <div
-                className="relative w-full max-w-sm lg:max-w-none rounded-2xl overflow-hidden
+                className="relative w-full rounded-2xl overflow-hidden
                            shadow-[0_4px_28px_rgba(44,24,16,0.14)]"
                 style={{ aspectRatio: '4/5' }}
               >
