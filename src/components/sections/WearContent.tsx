@@ -812,6 +812,25 @@ export default function WearContent() {
                     {addingToShopify ? 'Añadiendo…' : 'Añadir al carrito'}
                   </button>
                 </div>
+
+                {/* Product preview below summary */}
+                <div className="mt-5 flex justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    key={previewSrc}
+                    src={previewSrc}
+                    alt="Vista previa del producto seleccionado"
+                    style={{
+                      width: '100%',
+                      maxWidth: '400px',
+                      borderRadius: '16px',
+                      objectFit: 'cover',
+                      opacity: 0,
+                      transition: 'opacity 0.3s ease-in-out',
+                    }}
+                    onLoad={(e) => { e.currentTarget.style.opacity = '1' }}
+                  />
+                </div>
               </div>
             </RevealSection>
 
