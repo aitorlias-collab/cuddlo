@@ -89,6 +89,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setCart(updated)
       localStorage.setItem('cuddlo_cart_id', updated.id)
       setIsOpen(true)
+    } catch (err) {
+      console.error('[Cart] addItem failed:', err)
+      throw err
     } finally {
       setIsLoading(false)
     }

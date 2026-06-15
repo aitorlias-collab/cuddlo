@@ -406,7 +406,10 @@ export default function WearContent() {
     setAddingToShopify(true)
     getWearVariantId(product, effectFinish, isTote ? null : gender, color, isTote ? null : size)
       .then(async variantId => {
-        if (!variantId) return
+        if (!variantId) {
+          console.error('[Wear] Variant not found for:', { product, effectFinish, gender, color, size })
+          return
+        }
         const attrs = [
           { key: 'Acabado', value: effectFinish === 'impreso' ? 'Impreso' : 'Bordado' },
           ...(gender ? [{ key: 'Corte', value: gender === 'mujer' ? 'Mujer' : 'Hombre' }] : []),
@@ -418,7 +421,7 @@ export default function WearContent() {
           await shopifyCart.addItem(NOMBRE_ADDON_VARIANT[effectFinish], 1, [{ key: 'Nombre', value: petName }])
         }
       })
-      .catch(() => {})
+      .catch((err) => console.error('[Wear] Shopify sync failed:', err))
       .finally(() => setAddingToShopify(false))
 
     // Reset configurator for next item
