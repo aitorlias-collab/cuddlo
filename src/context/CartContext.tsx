@@ -29,8 +29,10 @@ interface CartContextValue {
   checkoutUrl: string | null
   isOpen: boolean
   isLoading: boolean
+  cartError: string | null
   openCart: () => void
   closeCart: () => void
+  clearCartError: () => void
   addItem: (variantId: string, quantity?: number, attributes?: { key: string; value: string }[]) => Promise<void>
   removeItem: (lineId: string) => Promise<void>
   updateQuantity: (lineId: string, quantity: number) => Promise<void>
@@ -57,9 +59,10 @@ function buildCheckoutUrl(shopifyCheckoutUrl: string): string {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart]       = useState<ShopifyCart | null>(null)
-  const [isOpen, setIsOpen]   = useState(false)
+  const [cart, setCart]           = useState<ShopifyCart | null>(null)
+  const [isOpen, setIsOpen]       = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [cartError, setCartError] = useState<string | null>(null)
 
   useEffect(() => {
     const savedId = localStorage.getItem('cuddlo_cart_id')
@@ -77,21 +80,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return newCart.id
   }, [cart])
 
+  // Reset cart state and create a fresh one — used on recovery
+  const resetAndCreateCart = async (): Promise<ShopifyCart> => {
+    setCart(null)
+    localStorage.removeItem('cuddlo_cart_id')
+    const freshCart = await createCart()
+    setCart(freshCart)
+    localStorage.setItem('cuddlo_cart_id', freshCart.id)
+    return freshCart
+  }
+
   const addItem = useCallback(async (
     variantId: string,
     quantity = 1,
     attributes: { key: string; value: string }[] = []
   ) => {
     setIsLoading(true)
-    try {
-      const cartId = await ensureCart()
+    setCartError(null)
+
+    const doAdd = async (cartId: string) => {
       const updated = await addToCart(cartId, variantId, quantity, attributes)
       setCart(updated)
       localStorage.setItem('cuddlo_cart_id', updated.id)
       setIsOpen(true)
-    } catch (err) {
-      console.error('[Cart] addItem failed:', err)
-      throw err
+    }
+
+    try {
+      const cartId = await ensureCart()
+      await doAdd(cartId)
+    } catch {
+      // Cart might be expired — auto-recover with a fresh cart, transparent to the user
+      console.error('[Cart] First attempt failed, auto-recovering with fresh cart…')
+      try {
+        const freshCart = await resetAndCreateCart()
+        await doAdd(freshCart.id)
+      } catch (retryErr) {
+        console.error('[Cart] Recovery also failed:', retryErr)
+        setCartError('Ha ocurrido un error. Por favor recarga la página.')
+        setIsOpen(true)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -119,17 +146,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [cart])
 
-  const lines      = cart ? normalizeLines(cart) : []
-  const itemCount  = cart?.totalQuantity ?? 0
-  const total      = cart ? parseFloat(cart.cost.totalAmount.amount) : 0
+  const lines       = cart ? normalizeLines(cart) : []
+  const itemCount   = cart?.totalQuantity ?? 0
+  const total       = cart ? parseFloat(cart.cost.totalAmount.amount) : 0
   const checkoutUrl = cart ? buildCheckoutUrl(cart.checkoutUrl) : null
 
   return (
     <CartContext.Provider value={{
       cart, lines, itemCount, total, checkoutUrl,
-      isOpen, isLoading,
-      openCart:  () => setIsOpen(true),
-      closeCart: () => setIsOpen(false),
+      isOpen, isLoading, cartError,
+      openCart:      () => setIsOpen(true),
+      closeCart:     () => setIsOpen(false),
+      clearCartError: () => setCartError(null),
       addItem, removeItem, updateQuantity,
     }}>
       {children}

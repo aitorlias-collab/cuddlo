@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
 
 export default function CartDrawer() {
-  const { isOpen, closeCart, lines, total, itemCount, checkoutUrl, removeItem, isLoading } = useCart()
+  const { isOpen, closeCart, lines, total, itemCount, checkoutUrl, removeItem, isLoading, cartError, clearCartError } = useCart()
 
   return (
     <AnimatePresence>
@@ -62,6 +62,22 @@ export default function CartDrawer() {
                 </svg>
               </button>
             </div>
+
+            {/* Error banner */}
+            {cartError && (
+              <div className="mx-6 mt-4 flex items-start gap-3 rounded-xl bg-red-100 px-4 py-3">
+                <p className="flex-1 text-sm text-red-700">{cartError}</p>
+                <button
+                  onClick={clearCartError}
+                  aria-label="Cerrar error"
+                  className="text-red-400 hover:text-red-600 shrink-0"
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
+            )}
 
             {/* Items */}
             <div className="flex-1 overflow-y-auto px-6 py-4">
