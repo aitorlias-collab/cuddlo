@@ -45,6 +45,7 @@ export default function AdminPage() {
   const [nombreMascota, setNombreMascota] = useState('')
   const [productIdx, setProductIdx]     = useState(0)
   const [imagenUrl, setImagenUrl]       = useState('')
+  const [checkoutUrl, setCheckoutUrl]   = useState('')
   const [sending, setSending]           = useState(false)
   const [sent, setSent]                 = useState(false)
   const [sentTo, setSentTo]             = useState('')
@@ -102,6 +103,7 @@ export default function AdminPage() {
           producto: product.label,
           precio: product.price,
           imagenUrl,
+          checkoutUrl,
         }),
       })
       if (res.ok) {
@@ -111,6 +113,7 @@ export default function AdminPage() {
         setNombre('')
         setNombreMascota('')
         setImagenUrl('')
+        setCheckoutUrl('')
         setProductIdx(0)
       } else {
         const data = await res.json()
@@ -366,6 +369,21 @@ export default function AdminPage() {
               {imagenUrl && (
                 <p style={{ margin: '8px 0 0', fontSize: 11, color: '#8B5E3C', wordBreak: 'break-all' }}>{imagenUrl}</p>
               )}
+            </div>
+
+            <div style={style.field}>
+              <label style={style.label}>Link de pago de Shopify</label>
+              <input
+                type="url"
+                value={checkoutUrl}
+                onChange={e => setCheckoutUrl(e.target.value)}
+                placeholder="https://shop.cuddlo.pet/..."
+                required
+                style={style.input}
+              />
+              <p style={{ margin: '8px 0 0', fontSize: 11, color: '#8B5E3C' }}>
+                Obtén este link en Shopify Admin → Orders → Create order → Send invoice
+              </p>
             </div>
 
             {sent && (

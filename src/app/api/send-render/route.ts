@@ -8,61 +8,7 @@ interface SendRenderPayload {
   producto: string
   precio: number
   imagenUrl: string
-}
-
-// Shopify numeric variant IDs for plush products
-const VARIANT_IDS: Record<string, number> = {
-  'Cuddlo Esencial': 53276067922248,
-  'Cuddlo Regalo':   53276068020552,
-  'Cuddlo Completo': 53276068086088,
-}
-
-async function createDraftOrder(
-  email: string,
-  nombreMascota: string,
-  producto: string,
-  precio: number,
-): Promise<string> {
-  const token = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN
-  if (!token) {
-    console.warn('[send-render] SHOPIFY_ADMIN_ACCESS_TOKEN not set — using fallback URL')
-    return 'https://shop.cuddlo.pet'
-  }
-
-  const variantId = VARIANT_IDS[producto]
-
-  const lineItem = variantId
-    ? { variant_id: variantId, quantity: 1 }
-    : { title: producto, price: precio.toFixed(2), quantity: 1, requires_shipping: true }
-
-  const body = {
-    draft_order: {
-      line_items: [lineItem],
-      customer: { email },
-      note: `Render de ${nombreMascota}`,
-      tags: 'render,cuddlo',
-    },
-  }
-
-  const res = await fetch(
-    `https://cxrkkh-q2.myshopify.com/admin/api/2024-01/draft_orders.json`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': token,
-      },
-      body: JSON.stringify(body),
-    },
-  )
-
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Shopify draft order failed (${res.status}): ${text}`)
-  }
-
-  const data = await res.json()
-  return data.draft_order.invoice_url as string
+  checkoutUrl: string
 }
 
 function buildEmailHtml({
@@ -71,8 +17,8 @@ function buildEmailHtml({
   producto,
   precio,
   imagenUrl,
-  invoiceUrl,
-}: SendRenderPayload & { invoiceUrl: string }): string {
+  checkoutUrl,
+}: SendRenderPayload): string {
   const mailtoSubject = encodeURIComponent(`Cambios en el render de ${nombreMascota}`)
 
   return `<!DOCTYPE html>
@@ -143,7 +89,7 @@ function buildEmailHtml({
               <tr>
                 <td style="background:#8B5E3C;border-radius:30px;
                            box-shadow:0 4px 16px rgba(139,94,60,0.28);">
-                  <a href="${invoiceUrl}"
+                  <a href="${checkoutUrl}"
                      style="display:block;padding:18px 44px;font-size:16px;
                             font-weight:600;color:#F5EFE6;text-decoration:none;
                             white-space:nowrap;letter-spacing:0.02em;">
@@ -199,23 +145,15 @@ export async function POST(req: NextRequest) {
   }
 
   const payload: SendRenderPayload = await req.json()
-  const { email, nombre, nombreMascota, producto, precio, imagenUrl } = payload
+  const { email, nombre, nombreMascota, producto, precio, imagenUrl, checkoutUrl } = payload
 
-  if (!email || !nombre || !nombreMascota || !producto || !precio || !imagenUrl) {
+  if (!email || !nombre || !nombreMascota || !producto || !precio || !imagenUrl || !checkoutUrl) {
     return NextResponse.json({ ok: false, error: 'Faltan campos obligatorios' }, { status: 400 })
   }
 
-  let invoiceUrl: string
-  try {
-    invoiceUrl = await createDraftOrder(email, nombreMascota, producto, precio)
-  } catch (err) {
-    console.error('[send-render] Draft order error:', err)
-    return NextResponse.json({ ok: false, error: 'Error al crear el pedido en Shopify' }, { status: 500 })
-  }
-
   if (!process.env.RESEND_API_KEY) {
-    console.log('[send-render] Dev mode — sin RESEND_API_KEY:', { email, nombre, nombreMascota, producto, precio, invoiceUrl })
-    return NextResponse.json({ ok: true, dev: true, invoiceUrl })
+    console.log('[send-render] Dev mode — sin RESEND_API_KEY:', { email, nombre, nombreMascota, producto, precio, checkoutUrl })
+    return NextResponse.json({ ok: true, dev: true })
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY)
@@ -225,7 +163,7 @@ export async function POST(req: NextRequest) {
     to: email,
     replyTo: 'hello@cuddlo.pet',
     subject: `Tu Cuddlo de ${nombreMascota} está listo 🐾`,
-    html: buildEmailHtml({ email, nombre, nombreMascota, producto, precio, imagenUrl, invoiceUrl }),
+    html: buildEmailHtml({ email, nombre, nombreMascota, producto, precio, imagenUrl, checkoutUrl }),
   })
 
   if (error) {
@@ -233,5 +171,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ ok: true, invoiceUrl })
+  return NextResponse.json({ ok: true })
 }
