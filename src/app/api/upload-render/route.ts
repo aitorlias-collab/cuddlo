@@ -50,14 +50,21 @@ export async function POST(req: NextRequest) {
 
   const arrayBuffer = await file.arrayBuffer()
 
-  await s3.send(
-    new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
-      Key: key,
-      Body: Buffer.from(arrayBuffer),
-      ContentType: file.type,
-    })
-  )
+  try {
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME!,
+        Key: key,
+        Body: Buffer.from(arrayBuffer),
+        ContentType: file.type,
+      })
+    )
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    const code = (err as Record<string, unknown>)?.Code ?? (err as Record<string, unknown>)?.name ?? 'unknown'
+    console.error('[upload-render] R2 error:', { code, message, bucket: process.env.R2_BUCKET_NAME, accountId: process.env.R2_ACCOUNT_ID })
+    return NextResponse.json({ error: `Error al subir a R2: ${code} — ${message}` }, { status: 500 })
+  }
 
   const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`
   return NextResponse.json({ url: publicUrl })

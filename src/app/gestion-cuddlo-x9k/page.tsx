@@ -58,7 +58,10 @@ export default function AdminPage() {
   const [previewSrc, setPreviewSrc]     = useState('')
 
   useEffect(() => {
-    setAuthed(sessionStorage.getItem('cuddlo_admin') === 'true')
+    const isAuthed = sessionStorage.getItem('cuddlo_admin') === 'true'
+    const savedPassword = sessionStorage.getItem('cuddlo_admin_pw') ?? ''
+    setAuthed(isAuthed)
+    if (isAuthed && savedPassword) setPassword(savedPassword)
     setChecking(false)
   }, [])
 
@@ -74,6 +77,7 @@ export default function AdminPage() {
       })
       if (res.ok) {
         sessionStorage.setItem('cuddlo_admin', 'true')
+        sessionStorage.setItem('cuddlo_admin_pw', password)
         setAuthed(true)
       } else {
         const data = await res.json()
@@ -128,6 +132,7 @@ export default function AdminPage() {
 
   function handleLogout() {
     sessionStorage.removeItem('cuddlo_admin')
+    sessionStorage.removeItem('cuddlo_admin_pw')
     setAuthed(false)
     setPassword('')
   }
