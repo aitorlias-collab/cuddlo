@@ -13,6 +13,15 @@ const PRODUCTS = [
   { label: 'Tote Bag',        price: 25  },
 ]
 
+const IMAGE_SLOTS = [
+  { label: 'Render del diseño', required: true },
+  { label: 'Mockup en prenda',  required: false },
+  { label: 'Detalle',           required: false },
+]
+
+type SlotState = { url: string; progress: number | null; error: string; preview: string }
+const emptySlot = (): SlotState => ({ url: '', progress: null, error: '', preview: '' })
+
 const style = {
   page:        { minHeight: '100vh', background: '#2C1810', padding: '0 0 80px' } as React.CSSProperties,
   card:        { maxWidth: 600, margin: '0 auto', padding: '0 24px' } as React.CSSProperties,
@@ -34,28 +43,22 @@ export default function AdminPage() {
   const [checking, setChecking]   = useState(true)
   const [authed, setAuthed]       = useState(false)
 
-  // Auth form
   const [password, setPassword]   = useState('')
   const [authError, setAuthError] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
 
-  // Send-render form
   const [email, setEmail]               = useState('')
   const [nombre, setNombre]             = useState('')
   const [nombreMascota, setNombreMascota] = useState('')
   const [productIdx, setProductIdx]     = useState(0)
-  const [imagenUrl, setImagenUrl]       = useState('')
   const [checkoutUrl, setCheckoutUrl]   = useState('')
   const [sending, setSending]           = useState(false)
   const [sent, setSent]                 = useState(false)
   const [sentTo, setSentTo]             = useState('')
   const [sendError, setSendError]       = useState('')
 
-  // Upload state
-  const fileInputRef                    = useRef<HTMLInputElement>(null)
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
-  const [uploadError, setUploadError]   = useState('')
-  const [previewSrc, setPreviewSrc]     = useState('')
+  const [slots, setSlots] = useState<SlotState[]>([emptySlot(), emptySlot(), emptySlot()])
+  const fileRefs = useRef<(HTMLInputElement | null)[]>([null, null, null])
 
   useEffect(() => {
     const isAuthed = sessionStorage.getItem('cuddlo_admin') === 'true'
@@ -64,6 +67,10 @@ export default function AdminPage() {
     if (isAuthed && savedPassword) setPassword(savedPassword)
     setChecking(false)
   }, [])
+
+  function updateSlot(i: number, patch: Partial<SlotState>) {
+    setSlots(prev => prev.map((s, idx) => idx === i ? { ...s, ...patch } : s))
+  }
 
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault()
@@ -92,6 +99,7 @@ export default function AdminPage() {
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
+    if (!slots[0].url) { setSendError('Sube al menos la imagen del render (obligatoria)'); return }
     setSending(true)
     setSent(false)
     setSendError('')
@@ -106,7 +114,9 @@ export default function AdminPage() {
           nombreMascota,
           producto: product.label,
           precio: product.price,
-          imagenUrl,
+          imagenUrl:  slots[0].url,
+          imagenUrl2: slots[1].url || undefined,
+          imagenUrl3: slots[2].url || undefined,
           checkoutUrl,
         }),
       })
@@ -116,9 +126,10 @@ export default function AdminPage() {
         setEmail('')
         setNombre('')
         setNombreMascota('')
-        setImagenUrl('')
         setCheckoutUrl('')
         setProductIdx(0)
+        setSlots([emptySlot(), emptySlot(), emptySlot()])
+        fileRefs.current.forEach(ref => { if (ref) ref.value = '' })
       } else {
         const data = await res.json()
         setSendError(data.error ?? 'Error enviando el render')
@@ -137,53 +148,35 @@ export default function AdminPage() {
     setPassword('')
   }
 
-  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+  function handleFileSelect(i: number) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+      updateSlot(i, { error: '', progress: 0, preview: URL.createObjectURL(file), url: '' })
 
-    setUploadError('')
-    setUploadProgress(0)
-    setPreviewSrc(URL.createObjectURL(file))
-    setImagenUrl('')
+      const formData = new FormData()
+      formData.append('file', file)
 
-    const formData = new FormData()
-    formData.append('file', file)
-
-    return new Promise<void>((resolve) => {
       const xhr = new XMLHttpRequest()
       xhr.open('POST', '/api/upload-render')
       xhr.setRequestHeader('Authorization', `Bearer ${password}`)
 
       xhr.upload.onprogress = (ev) => {
-        if (ev.lengthComputable) {
-          setUploadProgress(Math.round((ev.loaded / ev.total) * 100))
-        }
+        if (ev.lengthComputable) updateSlot(i, { progress: Math.round((ev.loaded / ev.total) * 100) })
       }
-
       xhr.onload = () => {
         if (xhr.status === 200) {
           const data = JSON.parse(xhr.responseText)
-          setImagenUrl(data.url)
-          setUploadProgress(100)
+          updateSlot(i, { url: data.url, progress: 100 })
         } else {
           let msg = 'Error al subir la imagen'
           try { msg = JSON.parse(xhr.responseText).error ?? msg } catch {}
-          setUploadError(msg)
-          setUploadProgress(null)
-          setPreviewSrc('')
+          updateSlot(i, { error: msg, progress: null, preview: '' })
         }
-        resolve()
       }
-
-      xhr.onerror = () => {
-        setUploadError('Error de conexión al subir la imagen')
-        setUploadProgress(null)
-        setPreviewSrc('')
-        resolve()
-      }
-
+      xhr.onerror = () => updateSlot(i, { error: 'Error de conexión al subir la imagen', progress: null, preview: '' })
       xhr.send(formData)
-    })
+    }
   }
 
   if (checking) return null
@@ -313,68 +306,72 @@ export default function AdminPage() {
               </p>
             </div>
 
-            <div style={style.field}>
-              <label style={style.label}>Imagen del render</label>
-
-              {/* Hidden file input */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                style={{ display: 'none' }}
-                onChange={handleFileSelect}
-              />
-
-              {/* Hidden URL value used by the form */}
-              <input type="hidden" value={imagenUrl} required />
-
-              {/* Upload button */}
-              <button
-                type="button"
-                onClick={() => { setUploadError(''); fileInputRef.current?.click() }}
-                style={{
-                  ...style.btn,
-                  background: imagenUrl ? '#3D5C2C' : '#8B5E3C',
-                  fontSize: 14,
-                  padding: '12px 14px',
-                }}
-              >
-                {imagenUrl ? '✓ Imagen subida — cambiar' : 'Subir imagen del render'}
-              </button>
-
-              {/* Progress bar */}
-              {uploadProgress !== null && uploadProgress < 100 && (
-                <div style={{ marginTop: 10 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontSize: 12, color: '#C4A882' }}>Subiendo…</span>
-                    <span style={{ fontSize: 12, color: '#C4A882' }}>{uploadProgress}%</span>
+            {/* Image slots */}
+            {IMAGE_SLOTS.map((slot, i) => {
+              const s = slots[i]
+              return (
+                <div key={i} style={{ ...style.field, padding: '16px', background: '#3D2415', borderRadius: 10, border: '1px solid #4A2E1C' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <label style={{ ...style.label, marginBottom: 0 }}>
+                      Imagen {i + 1}: {slot.label}
+                    </label>
+                    {!slot.required && (
+                      <span style={{ fontSize: 11, color: '#8B5E3C', letterSpacing: '0.06em' }}>OPCIONAL</span>
+                    )}
                   </div>
-                  <div style={{ width: '100%', height: 6, background: '#4A2E1C', borderRadius: 3, overflow: 'hidden' }}>
-                    <div style={{ width: `${uploadProgress}%`, height: '100%', background: '#8B5E3C', borderRadius: 3, transition: 'width 0.2s' }} />
-                  </div>
+
+                  <input
+                    ref={el => { fileRefs.current[i] = el }}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    style={{ display: 'none' }}
+                    onChange={handleFileSelect(i)}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => { updateSlot(i, { error: '' }); fileRefs.current[i]?.click() }}
+                    style={{
+                      ...style.btn,
+                      background: s.url ? '#3D5C2C' : '#8B5E3C',
+                      fontSize: 13,
+                      padding: '10px 14px',
+                    }}
+                  >
+                    {s.url ? `✓ ${slot.label} subida — cambiar` : `Subir ${slot.label.toLowerCase()}`}
+                  </button>
+
+                  {s.progress !== null && s.progress < 100 && (
+                    <div style={{ marginTop: 10 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, color: '#C4A882' }}>Subiendo…</span>
+                        <span style={{ fontSize: 12, color: '#C4A882' }}>{s.progress}%</span>
+                      </div>
+                      <div style={{ width: '100%', height: 6, background: '#4A2E1C', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ width: `${s.progress}%`, height: '100%', background: '#8B5E3C', borderRadius: 3, transition: 'width 0.2s' }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {s.error && (
+                    <p style={{ margin: '8px 0 0', color: '#fca5a5', fontSize: 13 }}>{s.error}</p>
+                  )}
+
+                  {s.preview && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={s.preview}
+                      alt={`Vista previa ${slot.label}`}
+                      style={{ marginTop: 12, width: '100%', maxWidth: 240, borderRadius: 8, border: '1px solid #4A2E1C', display: 'block' }}
+                    />
+                  )}
+
+                  {s.url && (
+                    <p style={{ margin: '8px 0 0', fontSize: 11, color: '#8B5E3C', wordBreak: 'break-all' }}>{s.url}</p>
+                  )}
                 </div>
-              )}
-
-              {/* Upload error */}
-              {uploadError && (
-                <p style={{ margin: '8px 0 0', color: '#fca5a5', fontSize: 13 }}>{uploadError}</p>
-              )}
-
-              {/* Preview */}
-              {previewSrc && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={previewSrc}
-                  alt="Vista previa del render"
-                  style={{ marginTop: 12, width: '100%', maxWidth: 280, borderRadius: 10, border: '1px solid #4A2E1C', display: 'block' }}
-                />
-              )}
-
-              {/* Public URL confirmation */}
-              {imagenUrl && (
-                <p style={{ margin: '8px 0 0', fontSize: 11, color: '#8B5E3C', wordBreak: 'break-all' }}>{imagenUrl}</p>
-              )}
-            </div>
+              )
+            })}
 
             <div style={style.field}>
               <label style={style.label}>Link de pago de Shopify</label>
