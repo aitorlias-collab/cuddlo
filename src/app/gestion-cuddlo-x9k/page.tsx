@@ -94,7 +94,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/send-render', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${password}` },
         body: JSON.stringify({
           email,
           nombre,
