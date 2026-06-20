@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const PRODUCTS = [
   { label: 'Cuddlo Esencial', price: 129 },
@@ -49,6 +49,12 @@ export default function AdminPage() {
   const [sent, setSent]                 = useState(false)
   const [sentTo, setSentTo]             = useState('')
   const [sendError, setSendError]       = useState('')
+
+  // Upload state
+  const fileInputRef                    = useRef<HTMLInputElement>(null)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+  const [uploadError, setUploadError]   = useState('')
+  const [previewSrc, setPreviewSrc]     = useState('')
 
   useEffect(() => {
     setAuthed(sessionStorage.getItem('cuddlo_admin') === 'true')
@@ -121,6 +127,55 @@ export default function AdminPage() {
     sessionStorage.removeItem('cuddlo_admin')
     setAuthed(false)
     setPassword('')
+  }
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadError('')
+    setUploadProgress(0)
+    setPreviewSrc(URL.createObjectURL(file))
+    setImagenUrl('')
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    return new Promise<void>((resolve) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', '/api/upload-render')
+      xhr.setRequestHeader('Authorization', `Bearer ${password}`)
+
+      xhr.upload.onprogress = (ev) => {
+        if (ev.lengthComputable) {
+          setUploadProgress(Math.round((ev.loaded / ev.total) * 100))
+        }
+      }
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const data = JSON.parse(xhr.responseText)
+          setImagenUrl(data.url)
+          setUploadProgress(100)
+        } else {
+          let msg = 'Error al subir la imagen'
+          try { msg = JSON.parse(xhr.responseText).error ?? msg } catch {}
+          setUploadError(msg)
+          setUploadProgress(null)
+          setPreviewSrc('')
+        }
+        resolve()
+      }
+
+      xhr.onerror = () => {
+        setUploadError('Error de conexión al subir la imagen')
+        setUploadProgress(null)
+        setPreviewSrc('')
+        resolve()
+      }
+
+      xhr.send(formData)
+    })
   }
 
   if (checking) return null
@@ -251,24 +306,65 @@ export default function AdminPage() {
             </div>
 
             <div style={style.field}>
-              <label style={style.label}>URL de la imagen del render</label>
+              <label style={style.label}>Imagen del render</label>
+
+              {/* Hidden file input */}
               <input
-                type="url"
-                value={imagenUrl}
-                onChange={e => setImagenUrl(e.target.value)}
-                placeholder="https://cuddlo.pet/renders/luna.png"
-                required
-                style={style.input}
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                style={{ display: 'none' }}
+                onChange={handleFileSelect}
               />
-              {imagenUrl && (
+
+              {/* Hidden URL value used by the form */}
+              <input type="hidden" value={imagenUrl} required />
+
+              {/* Upload button */}
+              <button
+                type="button"
+                onClick={() => { setUploadError(''); fileInputRef.current?.click() }}
+                style={{
+                  ...style.btn,
+                  background: imagenUrl ? '#3D5C2C' : '#8B5E3C',
+                  fontSize: 14,
+                  padding: '12px 14px',
+                }}
+              >
+                {imagenUrl ? '✓ Imagen subida — cambiar' : 'Subir imagen del render'}
+              </button>
+
+              {/* Progress bar */}
+              {uploadProgress !== null && uploadProgress < 100 && (
+                <div style={{ marginTop: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 12, color: '#C4A882' }}>Subiendo…</span>
+                    <span style={{ fontSize: 12, color: '#C4A882' }}>{uploadProgress}%</span>
+                  </div>
+                  <div style={{ width: '100%', height: 6, background: '#4A2E1C', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ width: `${uploadProgress}%`, height: '100%', background: '#8B5E3C', borderRadius: 3, transition: 'width 0.2s' }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Upload error */}
+              {uploadError && (
+                <p style={{ margin: '8px 0 0', color: '#fca5a5', fontSize: 13 }}>{uploadError}</p>
+              )}
+
+              {/* Preview */}
+              {previewSrc && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={imagenUrl}
+                  src={previewSrc}
                   alt="Vista previa del render"
                   style={{ marginTop: 12, width: '100%', maxWidth: 280, borderRadius: 10, border: '1px solid #4A2E1C', display: 'block' }}
-                  onError={e => { e.currentTarget.style.display = 'none' }}
-                  onLoad={e => { e.currentTarget.style.display = 'block' }}
                 />
+              )}
+
+              {/* Public URL confirmation */}
+              {imagenUrl && (
+                <p style={{ margin: '8px 0 0', fontSize: 11, color: '#8B5E3C', wordBreak: 'break-all' }}>{imagenUrl}</p>
               )}
             </div>
 

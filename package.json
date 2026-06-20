@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1073.0",
     "@uploadcare/react-uploader": "^1.15.0",
     "framer-motion": "^11.0.0",
     "graphql": "^16.8.1",
