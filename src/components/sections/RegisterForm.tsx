@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import ProgressBar from '@/components/ui/ProgressBar'
+import { useLanguage } from '@/hooks/useLanguage'
 
 interface LeadData {
   nombre: string
@@ -17,7 +18,6 @@ interface FormErrors {
   email?: string
   mascota?: string
 }
-
 
 function Field({
   label,
@@ -52,6 +52,7 @@ const inputErrorClass =
   'border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-400'
 
 export default function RegisterForm() {
+  const { t } = useLanguage()
   const router = useRouter()
 
   const [form, setForm] = useState<LeadData>({
@@ -75,13 +76,13 @@ export default function RegisterForm() {
   function validate(): boolean {
     const next: FormErrors = {}
 
-    if (!form.nombre.trim()) next.nombre = 'Campo obligatorio'
+    if (!form.nombre.trim()) next.nombre = t.register.errorRequired
     if (!form.email.trim()) {
-      next.email = 'Campo obligatorio'
+      next.email = t.register.errorRequired
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      next.email = 'Introduce un email válido'
+      next.email = t.register.errorEmail
     }
-    if (!form.mascota.trim()) next.mascota = 'Campo obligatorio'
+    if (!form.mascota.trim()) next.mascota = t.register.errorRequired
 
     setErrors(next)
     return Object.keys(next).length === 0
@@ -103,10 +104,8 @@ export default function RegisterForm() {
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-[480px]"
       >
-        {/* Progress */}
         <ProgressBar active={0} />
 
-        {/* Card */}
         <div
           className="rounded-2xl p-8 sm:p-10"
           style={{
@@ -114,63 +113,60 @@ export default function RegisterForm() {
             boxShadow: '0 2px 24px rgba(44, 24, 16, 0.08)',
           }}
         >
-          {/* Header */}
           <div className="mb-8">
             <h1 className="font-serif text-[2rem] font-bold text-ink leading-tight mb-2">
-              Crea tu Cuddlo
+              {t.register.title}
             </h1>
             <p className="text-sm text-ink/55">
-              Es gratis hasta que apruebes el render.
+              {t.register.subtitle}
             </p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-            <Field label="Nombre completo" error={errors.nombre}>
+            <Field label={t.register.fieldName} error={errors.nombre}>
               <input
                 type="text"
                 value={form.nombre}
                 onChange={set('nombre')}
-                placeholder="Tu nombre"
+                placeholder={t.register.placeholderName}
                 autoComplete="name"
                 className={errors.nombre ? inputErrorClass : inputClass}
               />
             </Field>
 
-            <Field label="Email" error={errors.email}>
+            <Field label={t.register.fieldEmail} error={errors.email}>
               <input
                 type="email"
                 value={form.email}
                 onChange={set('email')}
-                placeholder="tu@email.com"
+                placeholder={t.register.placeholderEmail}
                 autoComplete="email"
                 inputMode="email"
                 className={errors.email ? inputErrorClass : inputClass}
               />
             </Field>
 
-            <Field label="Nombre de tu mascota" error={errors.mascota}>
+            <Field label={t.register.fieldPet} error={errors.mascota}>
               <input
                 type="text"
                 value={form.mascota}
                 onChange={set('mascota')}
-                placeholder="¿Cómo se llama?"
+                placeholder={t.register.placeholderPet}
                 className={errors.mascota ? inputErrorClass : inputClass}
               />
             </Field>
 
-            <Field label="Tipo de mascota">
+            <Field label={t.register.fieldType}>
               <div className="relative">
                 <select
                   value={form.tipo}
                   onChange={set('tipo')}
                   className={`${inputClass} appearance-none pr-10 cursor-pointer`}
                 >
-                  <option value="Perro">🐕 Perro</option>
-                  <option value="Gato">🐈 Gato</option>
-                  <option value="Otro">🐾 Otro</option>
+                  <option value="Perro">🐕 {t.register.petDog}</option>
+                  <option value="Gato">🐈 {t.register.petCat}</option>
+                  <option value="Otro">🐾 {t.register.petOther}</option>
                 </select>
-                {/* Custom chevron */}
                 <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                     <path
@@ -185,7 +181,6 @@ export default function RegisterForm() {
               </div>
             </Field>
 
-            {/* CTA */}
             <button
               type="submit"
               disabled={submitting}
@@ -197,17 +192,16 @@ export default function RegisterForm() {
               {submitting ? (
                 <>
                   <span className="w-4 h-4 border-2 border-cream/40 border-t-cream rounded-full animate-spin" />
-                  Guardando...
+                  {t.register.submitting}
                 </>
               ) : (
-                'Siguiente → Sube las fotos'
+                t.register.submit
               )}
             </button>
           </form>
 
-          {/* Trust note */}
           <p className="text-center text-xs text-ink/40 mt-5">
-            🔒 Tus datos están seguros. No compartimos tu información.
+            {t.register.trust}
           </p>
         </div>
       </motion.div>

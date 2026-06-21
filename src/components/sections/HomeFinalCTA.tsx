@@ -2,8 +2,10 @@
 
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
+import { useLanguage } from '@/hooks/useLanguage'
 
 export default function HomeFinalCTA() {
+  const { t } = useLanguage()
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
 
@@ -25,7 +27,7 @@ export default function HomeFinalCTA() {
               textWrap: 'balance',
             } as React.CSSProperties}
           >
-            ¿Listo para empezar?
+            {t.homeFinalCTA.title}
           </h2>
 
           <div className="flex flex-col sm:flex-row gap-4 items-center">
@@ -34,19 +36,19 @@ export default function HomeFinalCTA() {
               className="border-2 border-cream/25 text-cream px-9 py-4 rounded-full text-base font-medium
                          hover:bg-cream hover:text-ink transition-all duration-300"
             >
-              Ver Peluches
+              {t.homeFinalCTA.ctaPlush}
             </a>
             <a
               href="/wear"
               className="border-2 border-cream/25 text-cream px-9 py-4 rounded-full text-base font-medium
                          hover:bg-cream hover:text-ink transition-all duration-300"
             >
-              Ver Wear
+              {t.homeFinalCTA.ctaWear}
             </a>
           </div>
 
           <p className="text-sand/60 text-sm">
-            Sin tarjeta hasta que apruebes el diseño.
+            {t.homeFinalCTA.subtext}
           </p>
         </motion.div>
       </div>

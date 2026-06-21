@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useLanguage } from '@/hooks/useLanguage'
 
 const heroText = {
   hidden: {},
@@ -12,6 +13,8 @@ const item = {
 }
 
 export default function HomeHero() {
+  const { t } = useLanguage()
+
   const scrollToLines = () => {
     document.getElementById('product-lines')?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -21,7 +24,6 @@ export default function HomeHero() {
       className="relative pt-40 pb-32 lg:pt-48 lg:pb-40"
       style={{ background: 'linear-gradient(to bottom, #F5EFE6 0%, #FDFAF6 100%)' }}
     >
-      {/* Paw pattern overlay */}
       <div
         aria-hidden="true"
         className="absolute inset-0 z-0 pointer-events-none"
@@ -39,17 +41,15 @@ export default function HomeHero() {
           animate="show"
           className="flex flex-col items-center gap-8"
         >
-          {/* Eyebrow pill */}
           <motion.div
             variants={item}
             className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full
                        border border-sand/40 text-brown/75 text-sm tracking-wide"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-brown/50 flex-shrink-0" />
-            Peluches artesanales · Ropa minimalista
+            {t.homeHero.eyebrow}
           </motion.div>
 
-          {/* Headline */}
           <motion.h1
             variants={item}
             className="font-serif font-bold text-ink"
@@ -60,19 +60,16 @@ export default function HomeHero() {
               textWrap: 'balance',
             } as React.CSSProperties}
           >
-            Personalización premium<br className="hidden sm:block" /> para tu mascota
+            {t.homeHero.title}
           </motion.h1>
 
-          {/* Subheadline */}
           <motion.p
             variants={item}
             className="text-base lg:text-xl text-ink/60 leading-relaxed max-w-[52ch]"
           >
-            Peluches artesanales y ropa minimalista creados a partir de las fotos de tu
-            mascota. Aprueba antes de pagar.
+            {t.homeHero.subtitle}
           </motion.p>
 
-          {/* CTA */}
           <motion.div variants={item}>
             <button
               onClick={scrollToLines}
@@ -80,7 +77,7 @@ export default function HomeHero() {
                          hover:bg-[#7A5235] transition-colors duration-300 cursor-pointer
                          shadow-[0_4px_20px_rgba(139,94,60,0.22)]"
             >
-              Descubre Cuddlo
+              {t.homeHero.cta}
             </button>
           </motion.div>
         </motion.div>

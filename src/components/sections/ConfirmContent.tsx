@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import ProgressBar from '@/components/ui/ProgressBar'
+import { useLanguage } from '@/hooks/useLanguage'
 
 interface Lead {
   nombre: string
@@ -14,7 +15,6 @@ interface Lead {
 function AnimatedCheck() {
   return (
     <div className="relative flex justify-center mb-8">
-      {/* Ripple ring */}
       <motion.div
         className="absolute w-24 h-24 rounded-full bg-brown/15"
         initial={{ scale: 0.6, opacity: 0.6 }}
@@ -22,7 +22,6 @@ function AnimatedCheck() {
         transition={{ duration: 1.2, delay: 0.3, ease: 'easeOut' }}
         aria-hidden="true"
       />
-      {/* Circle */}
       <motion.div
         className="relative w-24 h-24 rounded-full bg-brown flex items-center justify-center
                    shadow-[0_4px_24px_rgba(139,94,60,0.28)]"
@@ -30,13 +29,7 @@ function AnimatedCheck() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 220, damping: 18, delay: 0.15 }}
       >
-        <svg
-          width="48"
-          height="48"
-          viewBox="0 0 48 48"
-          fill="none"
-          aria-hidden="true"
-        >
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
           <motion.path
             d="M10 24 L20 34 L38 14"
             stroke="#F5EFE6"
@@ -74,6 +67,7 @@ interface WearCartItem {
 }
 
 export default function ConfirmContent() {
+  const { t, lang } = useLanguage()
   const [lead, setLead] = useState<Lead | null>(null)
   const [photoCount, setPhotoCount] = useState(0)
   const [wearCart, setWearCart] = useState<WearCartItem[]>([])
@@ -104,39 +98,48 @@ export default function ConfirmContent() {
     } catch {}
   }, [])
 
-  const petName = lead?.mascota || 'tu mascota'
+  const petName = lead?.mascota || t.upload.titleFallback
   const firstName = lead?.nombre?.split(' ')[0] ?? ''
   const isWear = wearCart.length > 0
   const wearTotal = wearCart.reduce((sum, item) => sum + item.price, 0)
 
+  const p = t.confirm
+
   const nextSteps = isWear
     ? [
-        { icon: '🎨', title: `Creamos la ilustración de ${petName}`,         sub: 'En menos de 48h' },
-        { icon: '✉️', title: 'Te la enviamos por email para que la apruebes', sub: 'Sin compromiso de pago' },
-        { icon: '📦', title: 'Fabricamos y enviamos tus prendas',             sub: 'Llegan en 7–10 días' },
+        { icon: '🎨', title: p.wearStep1Title.replace('{pet}', petName), sub: p.wearStep1Sub },
+        { icon: '✉️', title: p.wearStep2Title,                            sub: p.wearStep2Sub },
+        { icon: '📦', title: p.wearStep3Title,                            sub: p.wearStep3Sub },
       ]
     : [
-        { icon: '🎨', title: `Creamos el render digital de ${petName}`,       sub: 'En menos de 48h' },
-        { icon: '✉️', title: 'Te lo enviamos por email para que lo apruebes', sub: 'Sin compromiso de pago' },
-        { icon: '📦', title: 'Si te encanta, confirmamos y lo fabricamos',    sub: 'Llega en 3–4 semanas' },
+        { icon: '🎨', title: p.plushStep1Title.replace('{pet}', petName), sub: p.plushStep1Sub },
+        { icon: '✉️', title: p.plushStep2Title,                           sub: p.plushStep2Sub },
+        { icon: '📦', title: p.plushStep3Title,                           sub: p.plushStep3Sub },
       ]
 
+  const photoLabel = photoCount
+    ? `${photoCount} ${photoCount !== 1 ? p.photoPlural : p.photoSingular}`
+    : '—'
+
   const summary = [
-    { label: 'Nombre',         value: lead?.nombre || '—' },
-    { label: 'Email',          value: lead?.email  || '—' },
-    { label: 'Mascota',        value: petName + (lead?.tipo ? ` (${lead.tipo})` : '') },
-    { label: 'Fotos subidas',  value: photoCount ? `${photoCount} foto${photoCount !== 1 ? 's' : ''}` : '—' },
+    { label: p.summaryName,   value: lead?.nombre || '—' },
+    { label: p.summaryEmail,  value: lead?.email  || '—' },
+    { label: p.summaryPet,    value: petName + (lead?.tipo ? ` (${lead.tipo})` : '') },
+    { label: p.summaryPhotos, value: photoLabel },
   ]
+
+  const finishLabel = (finish: string) => {
+    if (finish === 'impreso') return lang === 'en' ? 'Printed' : 'Impreso'
+    return lang === 'en' ? 'Embroidered' : 'Bordado'
+  }
 
   return (
     <div className="min-h-screen bg-cream flex flex-col items-center pt-28 pb-16 px-4">
       <div className="w-full max-w-[520px]">
         <ProgressBar active={2} completed />
 
-        {/* Animated checkmark */}
         <AnimatedCheck />
 
-        {/* Header */}
         <motion.div
           variants={stagger}
           initial="hidden"
@@ -147,19 +150,18 @@ export default function ConfirmContent() {
             variants={fade}
             className="font-serif text-[2rem] font-bold text-ink leading-tight mb-3"
           >
-            ¡Tu pedido está en marcha{firstName ? `, ${firstName}` : ''}!
+            {p.titlePart1}{firstName ? `, ${firstName}` : ''}!
           </motion.h1>
           <motion.p
             variants={fade}
             className="text-sm text-ink/60 leading-relaxed max-w-[42ch] mx-auto"
           >
             {isWear
-              ? `Hemos recibido las fotos de ${petName}. En menos de 48h tendrás la ilustración para aprobar antes de fabricar.`
-              : `Hemos recibido las fotos de ${petName}. Nuestro equipo las revisará y recibirás el render en menos de 48 horas.`}
+              ? p.subtitleWear.replace('{pet}', petName)
+              : p.subtitlePlush.replace('{pet}', petName)}
           </motion.p>
         </motion.div>
 
-        {/* What happens next */}
         <motion.div
           variants={stagger}
           initial="hidden"
@@ -174,7 +176,7 @@ export default function ConfirmContent() {
             variants={fade}
             className="text-xs font-semibold text-brown uppercase tracking-[0.12em] mb-5"
           >
-            Qué pasa ahora
+            {p.nextStepsTitle}
           </motion.p>
           <div className="flex flex-col gap-0">
             {nextSteps.map((step, i) => (
@@ -203,7 +205,6 @@ export default function ConfirmContent() {
           </div>
         </motion.div>
 
-        {/* Order summary */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -211,7 +212,7 @@ export default function ConfirmContent() {
           className="border border-sand/30 rounded-2xl p-5 mb-8"
         >
           <p className="text-xs font-semibold text-brown uppercase tracking-[0.12em] mb-4">
-            Resumen del pedido
+            {p.orderSummaryTitle}
           </p>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3">
             {summary.map(({ label, value }) => (
@@ -222,19 +223,18 @@ export default function ConfirmContent() {
             ))}
           </dl>
 
-          {/* Wear cart breakdown */}
           {isWear && (
             <div className="mt-5 pt-4 border-t border-sand/25">
               <p className="text-xs font-semibold text-brown uppercase tracking-[0.12em] mb-3">
-                Prendas
+                {p.garmentsTitle}
               </p>
               <div className="flex flex-col gap-2">
                 {wearCart.map(item => (
                   <div key={item.id} className="flex items-center justify-between text-sm">
                     <span className="text-ink/70">
                       {item.productName}
-                      {item.gender ? ` · Corte ${item.gender}` : ''}
-                      {' · '}{item.finish === 'impreso' ? 'Impreso' : 'Bordado'}
+                      {item.gender ? ` · ${item.gender}` : ''}
+                      {' · '}{finishLabel(item.finish)}
                       {' · '}{item.colorLabel}
                       {item.size ? ` · ${item.size}` : ''}
                     </span>
@@ -243,14 +243,13 @@ export default function ConfirmContent() {
                 ))}
               </div>
               <div className="flex justify-between items-center mt-3 pt-3 border-t border-sand/20">
-                <span className="text-xs text-ink/45">Total</span>
+                <span className="text-xs text-ink/45">{p.total}</span>
                 <span className="font-serif font-bold text-ink">{wearTotal}€</span>
               </div>
             </div>
           )}
         </motion.div>
 
-        {/* CTA */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -264,10 +263,10 @@ export default function ConfirmContent() {
                        hover:bg-brown hover:text-cream
                        transition-all duration-200"
           >
-            Volver a la home
+            {p.ctaHome}
           </a>
           <p className="text-xs text-ink/40">
-            ¿Dudas?{' '}
+            {p.doubts}{' '}
             <a
               href="mailto:hello@cuddlo.pet"
               className="text-brown underline underline-offset-2 hover:text-ink transition-colors"

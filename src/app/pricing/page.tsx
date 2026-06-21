@@ -1,4 +1,5 @@
 import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 import PricingContent from '@/components/sections/PricingContent'
 
 export const metadata = {
@@ -11,6 +12,7 @@ export default function PricingPage() {
     <main>
       <Navbar />
       <PricingContent />
+      <Footer />
     </main>
   )
 }

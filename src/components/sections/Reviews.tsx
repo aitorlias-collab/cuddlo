@@ -2,6 +2,7 @@
 
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
+import { useLanguage } from '@/hooks/useLanguage'
 
 const reviews = [
   {
@@ -25,6 +26,7 @@ const reviews = [
 ]
 
 export default function Reviews() {
+  const { t } = useLanguage()
   const titleRef = useRef(null)
   const titleInView = useInView(titleRef, { once: true })
 
@@ -46,10 +48,10 @@ export default function Reviews() {
               textWrap: 'balance',
             } as React.CSSProperties}
           >
-            Lo que dicen las familias
+            {t.reviews.title}
           </h2>
           <p className="text-ink/65 text-lg max-w-[44ch]">
-            Cada Cuddlo es una historia. Aquí tienes algunas.
+            {t.reviews.subtitle}
           </p>
         </motion.div>
 
@@ -64,17 +66,14 @@ export default function Reviews() {
               className="flex flex-col gap-4 p-7 rounded-2xl border border-sand/25
                          shadow-[0_1px_10px_rgba(44,24,16,0.05)]"
             >
-              {/* Stars */}
               <div className="text-sand text-base tracking-wide" aria-label={`${review.stars} estrellas`}>
                 {'★'.repeat(review.stars)}
               </div>
 
-              {/* Quote */}
               <p className="text-ink text-sm leading-relaxed flex-1 italic">
                 &ldquo;{review.text}&rdquo;
               </p>
 
-              {/* Author */}
               <div>
                 <p className="text-brown text-sm font-semibold">{review.name}</p>
                 <p className="text-ink/50 text-xs mt-0.5">{review.pet}</p>

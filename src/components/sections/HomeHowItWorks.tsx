@@ -3,30 +3,15 @@
 import { useRef } from 'react'
 import Image from 'next/image'
 import { motion, useInView } from 'framer-motion'
+import { useLanguage } from '@/hooks/useLanguage'
 
-const steps = [
-  {
-    number: '01',
-    image: '/images/paso1.png',
-    title: 'Sube fotos de tu mascota',
-    description:
-      'Entre 3 y 8 fotos desde distintos ángulos. Cuantas más y mejores, más fiel es el resultado.',
-  },
-  {
-    number: '02',
-    image: '/images/paso2.png',
-    title: 'Aprueba el diseño antes de pagar',
-    description:
-      'Render o ilustración en menos de 48 h. Si algo no te convence, lo ajustamos. Sin coste adicional.',
-  },
-  {
-    number: '03',
-    image: '/images/paso3.png',
-    title: 'Recíbelo en casa',
-    description:
-      'Te avisamos cuando esté listo para enviar. Sin sorpresas — solo el resultado que aprobaste.',
-  },
+const STEP_META = [
+  { number: '01', image: '/images/paso1.png' },
+  { number: '02', image: '/images/paso2.png' },
+  { number: '03', image: '/images/paso3.png' },
 ]
+
+type StepData = { number: string; image: string; title: string; description: string }
 
 function StepImage({ src, alt }: { src: string; alt: string }) {
   return (
@@ -43,7 +28,7 @@ function StepImage({ src, alt }: { src: string; alt: string }) {
   )
 }
 
-function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
+function StepCard({ step, index }: { step: StepData; index: number }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-60px' })
 
@@ -77,8 +62,16 @@ function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
 }
 
 export default function HomeHowItWorks() {
+  const { t } = useLanguage()
   const titleRef = useRef(null)
   const titleInView = useInView(titleRef, { once: true, margin: '-60px' })
+
+  const steps: StepData[] = t.homeHowItWorks.steps.map((s, i) => ({
+    number: STEP_META[i].number,
+    image: STEP_META[i].image,
+    title: s.title,
+    description: s.description,
+  }))
 
   return (
     <section className="bg-lavender py-28 lg:py-36">
@@ -99,10 +92,10 @@ export default function HomeHowItWorks() {
               textWrap: 'balance',
             } as React.CSSProperties}
           >
-            Cómo funciona
+            {t.homeHowItWorks.title}
           </h2>
           <p className="text-ink/60 text-lg max-w-[50ch]">
-            El mismo proceso para peluches y ropa. Sencillo, transparente y sin riesgo.
+            {t.homeHowItWorks.subtitle}
           </p>
         </motion.div>
 

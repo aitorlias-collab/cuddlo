@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 import { motion, AnimatePresence } from 'framer-motion'
 import ProgressBar from '@/components/ui/ProgressBar'
+import { useLanguage } from '@/hooks/useLanguage'
 
 const UPLOADCARE_PUB_KEY = 'demopublickey'
 const MIN_PHOTOS = 3
@@ -16,12 +17,6 @@ interface Photo {
   preview: string
   name: string
 }
-
-const TIPS = [
-  { icon: '📸', label: 'De frente' },
-  { icon: '👤', label: 'De perfil' },
-  { icon: '🔍', label: 'Detalle del pelaje' },
-]
 
 async function uploadToUploadcare(file: File): Promise<{ uuid: string; cdnUrl: string }> {
   const fd = new FormData()
@@ -39,6 +34,7 @@ async function uploadToUploadcare(file: File): Promise<{ uuid: string; cdnUrl: s
 }
 
 export default function UploadForm() {
+  const { t } = useLanguage()
   const router = useRouter()
   const [petName, setPetName] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
@@ -46,7 +42,6 @@ export default function UploadForm() {
   const [error, setError] = useState<string | null>(null)
   const previewUrls = useRef<string[]>([])
 
-  // Load pet name from prior step
   useEffect(() => {
     try {
       const lead = JSON.parse(localStorage.getItem('cuddlo_lead') ?? '{}')
@@ -54,7 +49,6 @@ export default function UploadForm() {
     } catch {}
   }, [])
 
-  // Revoke object URLs on unmount
   useEffect(() => {
     return () => { previewUrls.current.forEach(URL.revokeObjectURL) }
   }, [])
@@ -78,12 +72,12 @@ export default function UploadForm() {
         )
         setPhotos((prev) => [...prev, ...uploaded])
       } catch {
-        setError('Error subiendo alguna foto. Comprueba tu conexión e inténtalo de nuevo.')
+        setError(t.upload.errorUpload)
       } finally {
         setUploading(false)
       }
     },
-    [photos.length]
+    [photos.length, t.upload.errorUpload]
   )
 
   const removePhoto = (id: string) => {
@@ -111,6 +105,12 @@ export default function UploadForm() {
 
   const remaining = MIN_PHOTOS - photos.length
 
+  const tips = [
+    { icon: '📸', label: t.upload.tips[0] },
+    { icon: '👤', label: t.upload.tips[1] },
+    { icon: '🔍', label: t.upload.tips[2] },
+  ]
+
   return (
     <div className="min-h-screen bg-cream flex flex-col items-center pt-28 pb-16 px-4">
       <motion.div
@@ -121,19 +121,17 @@ export default function UploadForm() {
       >
         <ProgressBar active={1} />
 
-        {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="font-serif text-[2rem] font-bold text-ink leading-tight mb-2">
-            Sube las fotos de {petName || 'tu mascota'}
+            {t.upload.title} {petName || t.upload.titleFallback}
           </h1>
           <p className="text-sm text-ink/55 max-w-[44ch] mx-auto leading-relaxed">
-            Entre 3 y 8 fotos desde diferentes ángulos. Cuantas más, más fiel será la réplica.
+            {t.upload.subtitle}
           </p>
         </div>
 
-        {/* Tips */}
         <div className="flex flex-wrap gap-2 justify-center mb-8">
-          {TIPS.map((tip) => (
+          {tips.map((tip) => (
             <span
               key={tip.label}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full
@@ -145,7 +143,6 @@ export default function UploadForm() {
           ))}
         </div>
 
-        {/* Drop zone */}
         <AnimatePresence>
           {photos.length < MAX_PHOTOS && (
             <motion.div
@@ -171,33 +168,28 @@ export default function UploadForm() {
                     {isDragActive ? '📂' : '📷'}
                   </span>
                   <p className="text-sm font-medium text-brown">
-                    {isDragActive
-                      ? 'Suelta aquí las fotos'
-                      : 'Arrastra las fotos o haz clic para seleccionar'}
+                    {isDragActive ? t.upload.dropActive : t.upload.dropIdle}
                   </p>
-                  <p className="text-xs text-ink/35">JPG, PNG o WEBP</p>
+                  <p className="text-xs text-ink/35">{t.upload.dropFormats}</p>
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Uploading indicator */}
         {uploading && (
           <div className="flex items-center justify-center gap-2 mb-5 text-sm text-brown">
             <span className="w-4 h-4 border-2 border-brown/25 border-t-brown rounded-full animate-spin" />
-            Subiendo fotos...
+            {t.upload.uploading}
           </div>
         )}
 
-        {/* Error */}
         {error && (
           <p className="text-red-700 text-sm text-center mb-5" role="alert">
             {error}
           </p>
         )}
 
-        {/* Photo grid */}
         {photos.length > 0 && (
           <div className="grid grid-cols-3 gap-3 mb-6">
             <AnimatePresence>
@@ -234,10 +226,9 @@ export default function UploadForm() {
           </div>
         )}
 
-        {/* Counter + CTA */}
         <div className="flex flex-col items-center gap-4">
           <p className={`text-sm font-medium tabular-nums ${photos.length >= MIN_PHOTOS ? 'text-brown' : 'text-ink/45'}`}>
-            {photos.length}/{MAX_PHOTOS} fotos subidas
+            {photos.length}/{MAX_PHOTOS} {t.upload.photosUploaded}
           </p>
 
           <button
@@ -250,12 +241,12 @@ export default function UploadForm() {
                           : 'bg-ink/10 text-ink/30 cursor-not-allowed'
                         }`}
           >
-            Siguiente → Confirmar pedido
+            {t.upload.submit}
           </button>
 
           {remaining > 0 && (
             <p className="text-xs text-ink/40">
-              Sube {remaining} foto{remaining !== 1 ? 's' : ''} más para continuar
+              {t.upload.remainingPrefix} {remaining} {remaining !== 1 ? t.upload.remainingPlural : t.upload.remainingSingular}
             </p>
           )}
         </div>
