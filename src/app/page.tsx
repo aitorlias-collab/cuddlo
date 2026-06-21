@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 import HomeHero from '@/components/sections/HomeHero'
 import HomeProductLines from '@/components/sections/HomeProductLines'
 import HomeHowItWorks from '@/components/sections/HomeHowItWorks'
@@ -24,6 +25,7 @@ export default function HomePage() {
         <div className="h-px bg-[#C4A882]/30" />
         <HomeFinalCTA />
       </main>
+      <Footer />
     </>
   )
 }

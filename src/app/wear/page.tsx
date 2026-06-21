@@ -1,4 +1,5 @@
 import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 import WearContent from '@/components/sections/WearContent'
 
 export const metadata = {
@@ -11,6 +12,7 @@ export default function WearPage() {
     <main>
       <Navbar />
       <WearContent />
+      <Footer />
     </main>
   )
 }

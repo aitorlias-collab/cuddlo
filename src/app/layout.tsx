@@ -4,6 +4,7 @@ import '@/styles/globals.css'
 import CustomCursor from '@/components/ui/CustomCursor'
 import CookieBanner from '@/components/CookieBanner'
 import Providers from '@/components/Providers'
+import { LanguageProvider } from '@/hooks/useLanguage'
 
 const bodoniModa = Bodoni_Moda({
   subsets: ['latin'],
@@ -36,9 +37,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es" className={`${bodoniModa.variable} ${inter.variable}`}>
       <body className="font-sans antialiased bg-cream text-ink">
         <Providers>
-          <CustomCursor />
-          <CookieBanner />
-          {children}
+          <LanguageProvider>
+            <CustomCursor />
+            <CookieBanner />
+            {children}
+          </LanguageProvider>
         </Providers>
       </body>
     </html>

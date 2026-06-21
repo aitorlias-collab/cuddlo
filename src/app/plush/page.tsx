@@ -1,4 +1,5 @@
 import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 import Hero from '@/components/sections/Hero'
 import HowItWorks from '@/components/sections/HowItWorks'
 import PlushPricing from '@/components/sections/PlushPricing'
@@ -20,6 +21,7 @@ export default function PlushPage() {
       <PlushPricing />
       <Reviews />
       <FinalCTA />
+      <Footer />
     </main>
   )
 }

@@ -2,14 +2,11 @@
 
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-
-const guarantees = [
-  'Sin pago hasta aprobar el render',
-  'Render en menos de 48 h',
-  'Envío a toda España',
-]
+import { useLanguage } from '@/hooks/useLanguage'
 
 export default function FinalCTA() {
+  const { t } = useLanguage()
+  const { finalCTA } = t
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
 
@@ -31,12 +28,11 @@ export default function FinalCTA() {
               textWrap: 'balance',
             } as React.CSSProperties}
           >
-            El peluche más especial del mundo
+            {finalCTA.title}
           </h2>
 
           <p className="text-sand/90 text-lg leading-relaxed max-w-[40ch]">
-            Solo aceptamos 15 nuevos pedidos al mes. El proceso es gratuito
-            hasta que apruebes el resultado.
+            {finalCTA.subtitle}
           </p>
 
           <a
@@ -44,11 +40,11 @@ export default function FinalCTA() {
             className="bg-sand text-ink px-10 py-5 rounded-full text-base font-medium
                        hover:bg-[#B8976F] transition-colors duration-200"
           >
-            Personaliza el tuyo
+            {finalCTA.cta}
           </a>
 
           <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2 pt-2">
-            {guarantees.map((text) => (
+            {finalCTA.guarantees.map((text) => (
               <span key={text} className="flex items-center gap-2 text-sm text-sand/75">
                 <span className="text-sand font-semibold" aria-hidden="true">✓</span>
                 {text}

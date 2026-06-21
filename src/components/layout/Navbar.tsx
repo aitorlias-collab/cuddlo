@@ -4,17 +4,19 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import CartIcon from '@/components/CartIcon'
-
-const NAV_LINKS = [
-  { label: 'Peluche', href: '/plush' },
-  { label: 'Wear',    href: '/wear' },
-  { label: 'Precios', href: '/pricing' },
-]
+import { useLanguage } from '@/hooks/useLanguage'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
+  const { t, lang, setLang } = useLanguage()
+
+  const NAV_LINKS = [
+    { label: t.nav.plush,   href: '/plush' },
+    { label: t.nav.wear,    href: '/wear' },
+    { label: t.nav.pricing, href: '/pricing' },
+  ]
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 12)
@@ -63,6 +65,17 @@ export default function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          {/* Language selector — desktop */}
+          <button
+            onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
+            aria-label="Cambiar idioma"
+            className="hidden md:flex items-center text-xs font-medium select-none"
+          >
+            <span className={lang === 'es' ? 'text-brown font-semibold' : 'text-ink/40 hover:text-ink/70 transition-colors'}>ES</span>
+            <span className="mx-1 text-sand">|</span>
+            <span className={lang === 'en' ? 'text-brown font-semibold' : 'text-ink/40 hover:text-ink/70 transition-colors'}>EN</span>
+          </button>
+
           {/* Cart icon */}
           <CartIcon />
 
@@ -72,7 +85,7 @@ export default function Navbar() {
             className="hidden md:inline-flex bg-brown text-cream px-6 py-2.5 rounded-full text-sm font-medium
                        hover:bg-[#7A5235] transition-colors duration-200"
           >
-            Empieza
+            {t.nav.cta}
           </a>
 
           {/* Hamburger — mobile only */}
@@ -121,13 +134,24 @@ export default function Navbar() {
               </a>
             )
           })}
+
+          {/* Language selector — mobile */}
+          <button
+            onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
+            className="text-left text-sm font-medium py-1"
+          >
+            <span className={lang === 'es' ? 'text-brown font-semibold' : 'text-ink/45'}>ES</span>
+            <span className="mx-1 text-sand">|</span>
+            <span className={lang === 'en' ? 'text-brown font-semibold' : 'text-ink/45'}>EN</span>
+          </button>
+
           <a
             href="/register"
             onClick={() => setMenuOpen(false)}
             className="mt-2 bg-brown text-cream px-6 py-3 rounded-full text-sm font-medium text-center
                        hover:bg-[#7A5235] transition-colors duration-200"
           >
-            Empieza
+            {t.nav.cta}
           </a>
         </div>
       )}

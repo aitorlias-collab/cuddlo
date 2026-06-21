@@ -3,29 +3,12 @@
 import { useRef } from 'react'
 import Image from 'next/image'
 import { motion, useInView } from 'framer-motion'
+import { useLanguage } from '@/hooks/useLanguage'
 
-const steps = [
-  {
-    number: '01',
-    image: '/images/paso1.png',
-    title: 'Sube fotos de tu mascota',
-    description:
-      'Comparte entre 3 y 8 fotos claras desde distintos ángulos. Cuantas más fotos, más fiel es la réplica.',
-  },
-  {
-    number: '02',
-    image: '/images/paso2.png',
-    title: 'Aprueba el render antes de pagar',
-    description:
-      'En menos de 48 horas recibes un render digital. Si algo no te convence, lo ajustamos. Sin coste.',
-  },
-  {
-    number: '03',
-    image: '/images/paso3.png',
-    title: 'Confirma y recibe tu peluche',
-    description:
-      'Una vez aprobado el render, confirmamos el pedido. Tu Cuddlo llega en 3–4 semanas.',
-  },
+const STEP_IMAGES = [
+  '/images/paso1.png',
+  '/images/paso2.png',
+  '/images/paso3.png',
 ]
 
 function StepImage({ src, alt }: { src: string; alt: string }) {
@@ -43,7 +26,19 @@ function StepImage({ src, alt }: { src: string; alt: string }) {
   )
 }
 
-function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
+function StepCard({
+  number,
+  image,
+  title,
+  description,
+  index,
+}: {
+  number: string
+  image: string
+  title: string
+  description: string
+  index: number
+}) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-60px' })
 
@@ -56,17 +51,17 @@ function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
       className="bg-cream rounded-2xl overflow-hidden flex flex-col
                  shadow-[0_2px_16px_rgba(44,24,16,0.07)]"
     >
-      <StepImage src={step.image} alt={step.title} />
+      <StepImage src={image} alt={title} />
 
       <div className="p-8 flex flex-col gap-4">
         <span className="font-serif text-[4rem] font-bold leading-none text-sand select-none">
-          {step.number}
+          {number}
         </span>
         <h3 className="font-serif text-lg font-semibold text-ink leading-snug">
-          {step.title}
+          {title}
         </h3>
         <p className="text-sm text-ink/65 leading-relaxed">
-          {step.description}
+          {description}
         </p>
       </div>
     </motion.div>
@@ -74,8 +69,16 @@ function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
 }
 
 export default function HowItWorks() {
+  const { t } = useLanguage()
+  const { howItWorks } = t
   const titleRef = useRef(null)
   const titleInView = useInView(titleRef, { once: true })
+
+  const steps = howItWorks.steps.map((s, i) => ({
+    number: String(i + 1).padStart(2, '0'),
+    image: STEP_IMAGES[i],
+    ...s,
+  }))
 
   return (
     <section id="como-funciona" className="bg-lavender py-24 lg:py-32">
@@ -95,16 +98,16 @@ export default function HowItWorks() {
               textWrap: 'balance',
             } as React.CSSProperties}
           >
-            Cómo funciona
+            {howItWorks.title}
           </h2>
           <p className="text-ink/65 text-lg max-w-[48ch]">
-            Tres pasos sencillos y tu mascota se convierte en el peluche más especial del mundo.
+            {howItWorks.subtitle}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {steps.map((step, i) => (
-            <StepCard key={i} step={step} index={i} />
+            <StepCard key={i} {...step} index={i} />
           ))}
         </div>
 
@@ -120,10 +123,10 @@ export default function HowItWorks() {
             className="bg-brown text-cream px-8 py-4 rounded-full text-base font-medium
                        hover:bg-[#7A5235] transition-colors duration-200"
           >
-            Empieza ahora, es gratis
+            {howItWorks.ctaPrimary}
           </a>
           <p className="text-sm text-ink/50">
-            Sin tarjeta. Solo pagas si te encanta el resultado.
+            {howItWorks.ctaSubtext}
           </p>
         </motion.div>
 

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
 import { getWearVariantId } from '@/lib/shopify'
+import { useLanguage } from '@/hooks/useLanguage'
 
 // ─── FadeImg helper ───────────────────────────────────────────────────────────
 
@@ -310,6 +311,9 @@ function StepCard({ step, index }: { step: typeof WEAR_STEPS[0]; index: number }
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function WearContent() {
+  const { t } = useLanguage()
+  const { wear } = t
+
   // Configurator state — each step nullable until selected
   const [product, setProduct] = useState<Product | null>(null)
   const [finish,  setFinish]  = useState<Finish | null>(null)
@@ -494,14 +498,14 @@ export default function WearContent() {
                 className="font-serif font-bold text-ink leading-[1.08]"
                 style={{ fontSize: 'clamp(2.6rem, 5.5vw, 4rem)', textWrap: 'balance' } as React.CSSProperties}
               >
-                Tu mascota,{' '}en tu ropa.
+                {wear.heroTitle}
               </motion.h1>
 
               <motion.p
                 variants={{ hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } } }}
                 className="text-base lg:text-lg text-ink/70 leading-relaxed max-w-[44ch]"
               >
-                Ilustración personalizada a partir de tus fotos. Discreta, elegante, única.
+                {wear.heroSubtitle}
               </motion.p>
 
               <motion.div
@@ -512,7 +516,7 @@ export default function WearContent() {
                   className="inline-flex bg-brown text-cream px-8 py-4 rounded-full text-base font-medium
                              hover:bg-[#7A5235] transition-colors duration-200"
                 >
-                  Personaliza la tuya
+                  {wear.heroCta}
                 </a>
               </motion.div>
 
@@ -520,7 +524,7 @@ export default function WearContent() {
                 variants={{ hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } } }}
                 className="text-sm text-ink/45"
               >
-                Pequeño diseño en el pecho izquierdo · Etiqueta interior Cuddlo
+                {wear.heroTag}
               </motion.p>
             </motion.div>
 
@@ -544,10 +548,10 @@ export default function WearContent() {
               className="font-serif font-bold text-ink mb-2"
               style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.4rem)', textWrap: 'balance' } as React.CSSProperties}
             >
-              Configura tu pedido
+              {wear.configuratorTitle}
             </h2>
             <p className="text-ink/55 text-base">
-              Cada elección te llevará al siguiente paso. Puedes añadir varias prendas antes de continuar.
+              {wear.configuratorSubtitle}
             </p>
           </motion.div>
 
@@ -1066,20 +1070,20 @@ export default function WearContent() {
               className="font-serif font-bold text-cream"
               style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.25rem)', lineHeight: 1.08, textWrap: 'balance' } as React.CSSProperties}
             >
-              ¿Lista para llevarle contigo?
+              {wear.finalCTATitle}
             </h2>
             <p className="text-sand/90 text-lg leading-relaxed max-w-[40ch]">
-              Ilustración aprobada antes de producir. Sin riesgos, sin sorpresas.
+              {wear.finalCTASubtitle}
             </p>
             <a
               href="/register"
               className="bg-sand text-ink px-10 py-5 rounded-full text-base font-medium
                          hover:bg-[#B8976F] transition-colors duration-200"
             >
-              Empieza tu diseño
+              {wear.finalCTACta}
             </a>
             <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2 pt-2">
-              {['Ilustración personalizada', 'Aprueba antes de producir', 'Envío a toda España'].map(text => (
+              {wear.finalGuarantees.map(text => (
                 <span key={text} className="flex items-center gap-2 text-sm text-sand/75">
                   <span className="text-sand font-semibold" aria-hidden="true">✓</span>
                   {text}

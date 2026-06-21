@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import { motion, useInView } from 'framer-motion'
+import { useLanguage } from '@/hooks/useLanguage'
 
 const slides = [
   { src: '/images/hero.jpg',  alt: 'Peluche personalizado de mascota — Cuddlo' },
@@ -85,6 +86,8 @@ function HeroSlider() {
 }
 
 export default function Hero() {
+  const { t } = useLanguage()
+  const { hero } = t
   const statsRef = useRef(null)
   const statsInView = useInView(statsRef, { once: true, margin: '-40px' })
 
@@ -94,7 +97,7 @@ export default function Hero() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center pb-20">
 
-          {/* Left: copy — staggered children */}
+          {/* Left: copy */}
           <motion.div
             variants={heroText}
             initial="hidden"
@@ -109,14 +112,11 @@ export default function Hero() {
                 textWrap: 'balance',
               } as React.CSSProperties}
             >
-              Tu mascota,{' '}
-              hecha peluche{' '}
-              para siempre
+              {hero.title}
             </motion.h1>
 
             <motion.p variants={heroItem} className="text-base lg:text-lg text-ink/70 leading-relaxed max-w-[44ch]">
-              Envía fotos de tu perro o gato y nosotros creamos su réplica en
-              peluche premium. Aprueba el render antes de pagar nada.
+              {hero.subtitle}
             </motion.p>
 
             <motion.div variants={heroItem} className="flex flex-col sm:flex-row gap-3 pt-1">
@@ -125,14 +125,14 @@ export default function Hero() {
                 className="bg-brown text-cream px-8 py-4 rounded-full text-base font-medium
                            hover:bg-[#7A5235] transition-colors duration-200 text-center"
               >
-                Personaliza el tuyo
+                {hero.ctaPrimary}
               </a>
               <a
                 href="#como-funciona"
                 className="border border-sand text-brown px-8 py-4 rounded-full text-base font-medium
                            hover:bg-sand/10 transition-colors duration-200 text-center"
               >
-                Cómo funciona
+                {hero.ctaSecondary}
               </a>
             </motion.div>
           </motion.div>
@@ -159,11 +159,11 @@ export default function Hero() {
           className="border-t border-sand/30 py-5"
         >
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-8 text-sm text-brown">
-            <span>127 familias</span>
+            <span>{hero.trustFamilies}</span>
             <span className="hidden sm:block text-sand" aria-hidden="true">·</span>
-            <span>4.9<span className="text-sand">★</span> valoración</span>
+            <span>{hero.trustRating}</span>
             <span className="hidden sm:block text-sand" aria-hidden="true">·</span>
-            <span>Render en 48h</span>
+            <span>{hero.trustRender}</span>
           </div>
         </motion.div>
 
