@@ -8,7 +8,7 @@ export const en = {
   hero: {
     title: 'Your pet, turned into a plush forever',
     subtitle:
-      'Send photos of your dog or cat and we'll create their premium plush replica. Approve the render before paying anything.',
+      "Send photos of your dog or cat and we'll create their premium plush replica. Approve the render before paying anything.",
     ctaPrimary: 'Personalise yours',
     ctaSecondary: 'How it works',
     trustFamilies: '127 families',
@@ -19,7 +19,7 @@ export const en = {
     title: 'How it works',
     subtitle:
       'Three simple steps and your pet becomes the most special plush in the world.',
-    ctaPrimary: 'Start now, it\'s free',
+    ctaPrimary: "Start now, it's free",
     ctaSubtext: 'No card needed. You only pay if you love the result.',
     steps: [
       {
@@ -30,7 +30,7 @@ export const en = {
       {
         title: 'Approve the render before paying',
         description:
-          'Within 48 hours you receive a digital render. If anything isn\'t right, we adjust it. Free of charge.',
+          "Within 48 hours you receive a digital render. If anything isn't right, we adjust it. Free of charge.",
       },
       {
         title: 'Confirm and receive your plush',
