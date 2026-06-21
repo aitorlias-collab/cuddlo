@@ -20,6 +20,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
+  console.log('R2 vars:', {
+    hasAccountId: !!process.env.R2_ACCOUNT_ID,
+    hasAccessKey: !!process.env.R2_ACCESS_KEY_ID,
+    hasSecretKey: !!process.env.R2_SECRET_ACCESS_KEY,
+    hasBucket: !!process.env.R2_BUCKET_NAME,
+    hasPublicUrl: !!process.env.R2_PUBLIC_URL,
+  })
+
   const formData = await req.formData()
   const file = formData.get('file') as File | null
 
